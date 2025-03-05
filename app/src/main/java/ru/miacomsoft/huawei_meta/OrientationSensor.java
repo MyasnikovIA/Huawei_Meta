@@ -9,16 +9,16 @@ import ru.miacomsoft.huawei_meta.orientation_sensor.utils.OrientationSensorInter
 
 public class OrientationSensor implements OrientationSensorInterface {
     public interface CallbackOrientationSensor {
-        void call(Double AZIMUTH, Double PITCH, Double ROLL);
+        void call(Double azimuth, Double pitch, Double ROLL);
     }
 
     private Context context;
     private Orientation orientationSensor;
     private CallbackOrientationSensor callbackOrientationSensor;
 
-    private Double AZIMUTH;
-    private Double PITCH;
-    private Double ROLL;
+    private Double azimuth;
+    private Double pitch;
+    private Double roll;
 
     public OrientationSensor(Context context ) {
         this.context = context;
@@ -28,13 +28,13 @@ public class OrientationSensor implements OrientationSensorInterface {
         this.callbackOrientationSensor = callbackOrientationSensor;
     }
     public double getAZIMUTH() {
-        return AZIMUTH;
+        return azimuth;
     }
     public double getROLL() {
-        return ROLL;
+        return roll;
     }
     public double getPITCH() {
-        return PITCH;
+        return pitch;
     }
 
     //@Override
@@ -59,12 +59,12 @@ public class OrientationSensor implements OrientationSensorInterface {
         orientationSensor.off();
     }
     @Override
-    public void orientation(Double AZIMUTH, Double PITCH, Double ROLL) {
-        this.AZIMUTH = AZIMUTH;
-        this.PITCH = PITCH;
-        this.ROLL = ROLL;
+    public void orientation(Double azimuth, Double pitch, Double roll) {
+        this.azimuth = azimuth;
+        this.pitch = pitch;
+        this.roll = roll;
         if (callbackOrientationSensor!=null) {
-            callbackOrientationSensor.call( AZIMUTH, PITCH,  ROLL);
+            callbackOrientationSensor.call( azimuth, pitch,  roll);
         }
     }
 }

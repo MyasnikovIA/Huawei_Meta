@@ -6,13 +6,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-
-
 
 public class MainActivity extends AppCompatActivity {
     //    adb tcpip 5037
@@ -29,11 +25,10 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // перевернуть ориентацию приложения
+        // Перевернуть ориентацию приложения
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
         //View rootView = findViewById(android.R.id.content);
         //rootView.setRotation(180);
-
         runExternalApp = new RunExternalApp(this);
         permissionGPS = new PermissionGPS(this);
         permissionFile = new PermissionFile(this);
