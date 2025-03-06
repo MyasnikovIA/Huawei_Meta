@@ -38,7 +38,6 @@ public class FileObserverService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        startWatching();
     }
 
     @Override
@@ -49,6 +48,7 @@ public class FileObserverService extends Service {
         } else {
             pathDirFile = new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/Camera/");
         }
+        startWatching();
 
         orientationSensor = new OrientationSensor(getBaseContext());
         orientationSensor.onResume();
@@ -90,9 +90,6 @@ public class FileObserverService extends Service {
         // Укажите путь к каталогу, который нужно отслеживать
         // String path = getExternalFilesDir(null).getAbsolutePath(); // Пример: внешнее хранилище приложения
         // path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/PANORAMA_HUAWEI/";
-
-        // Проверка доступности каталога
-
         if (!pathDirFile.exists()) {
             pathDirFile.mkdirs();
         }
@@ -104,7 +101,7 @@ public class FileObserverService extends Service {
                 }
             }
         };
-        fileObserver.startWatching(); // Начать отслеживание
+        fileObserver.startWatching();
     }
 
     private void addMetaInfo(File directory ,String fileName){
