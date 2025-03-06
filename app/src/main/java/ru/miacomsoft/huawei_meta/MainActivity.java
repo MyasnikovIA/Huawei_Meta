@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ru.miacomsoft.huawei_meta.view_photo.Panorama;
+
 public class MainActivity extends AppCompatActivity {
     //    adb tcpip 5037
     //    adb connect 192.168.15.50:5037
@@ -35,6 +37,10 @@ public class MainActivity extends AppCompatActivity {
     private String PATH_DIR;
     private Intent serviceIntent;
     private FileBrowser fileBrowser;
+
+    private Panorama panorama;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         permissionGPS = new PermissionGPS(this);
         permissionFile = new PermissionFile(this);
         fileBrowser = new FileBrowser(this);
+        panorama = new Panorama(this);
     }
 
     @Override
@@ -71,8 +78,7 @@ public class MainActivity extends AppCompatActivity {
         });
         fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
         fileBrowser.onClick((File file)->{
-            // todo: дописать визуализацию  выбранного файла
-            Toast.makeText(this, "Выбран файл: " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+            panorama.getPhoto(R.id.webView,file);
         });
     }
 
