@@ -34,7 +34,7 @@ public class FileObserverService extends Service {
     private double longitude = 0;
 
     private String Error="";
-    private String path;
+    private File pathDirFile;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -43,6 +43,13 @@ public class FileObserverService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        String pathDir = intent.getStringExtra("PATH_DIR");
+        if (pathDir != null) {
+            pathDirFile = new File(pathDir);
+        } else {
+            pathDirFile = new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/Camera/");
+        }
+
         orientationSensor = new OrientationSensor(getBaseContext());
         orientationSensor.onResume();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -82,18 +89,18 @@ public class FileObserverService extends Service {
     private void startWatching() {
         // Укажите путь к каталогу, который нужно отслеживать
         // String path = getExternalFilesDir(null).getAbsolutePath(); // Пример: внешнее хранилище приложения
-        path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/PANORAMA_HUAWEI/";
+        // path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/PANORAMA_HUAWEI/";
 
         // Проверка доступности каталога
-        File directory = new File(path);
-        if (!directory.exists()) {
-            directory.mkdirs();
+
+        if (!pathDirFile.exists()) {
+            pathDirFile.mkdirs();
         }
-        fileObserver = new FileObserver(path) {
+        fileObserver = new FileObserver(pathDirFile.getAbsolutePath()) {
             @Override
             public void onEvent(int event, String fileName) {
                 if ((FileObserver.CREATE & event) != 0) {
-                    addMetaInfo(directory,fileName);
+                    addMetaInfo(pathDirFile,fileName);
                 }
             }
         };

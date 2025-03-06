@@ -20,11 +20,10 @@ import java.io.StringWriter;
 
 
 public class GpsManager implements LocationListener, android.location.OnNmeaMessageListener  {
-    private static final int REQUEST_LOCATION_PERMISSION = 1000;
-
     public interface CallbackOnChangeLatLon {
         public String call(JSONObject query) throws JSONException, IOException;
     }
+
     public interface CallbackOnChangeLocation {
         public void call(double lat,double lon);
     }
@@ -218,6 +217,7 @@ public class GpsManager implements LocationListener, android.location.OnNmeaMess
     public void onNmeaMessage(String s, long l) {
 
     }
+
     /**
      * Форматирует исключение в строку.
      * @param exception Исключение
