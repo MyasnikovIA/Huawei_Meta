@@ -8,9 +8,13 @@ import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
@@ -19,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,9 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private RunExternalApp runExternalApp;
     private String PATH_DIR;
     private Intent serviceIntent;
-
-    private ListView listViewFiles;
-    private ArrayList<String> listFiles;
+    private FileBrowser fileBrowser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         runExternalApp = new RunExternalApp(this);
         permissionGPS = new PermissionGPS(this);
         permissionFile = new PermissionFile(this);
+        fileBrowser = new FileBrowser(this);
     }
 
     @Override
@@ -64,6 +68,11 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonStartHuawei = (Button)findViewById(R.id.buttonStartHuawei);
         buttonStartHuawei.setOnClickListener(v -> {
             runExternalApp.run("com.huawei.cvIntl60");
+        });
+        fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
+        fileBrowser.onClick((File file)->{
+            // todo: дописать визуализацию  выбранного файла
+            Toast.makeText(this, "Выбран файл: " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -105,4 +114,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
        // permissionFile.onActivityResult(requestCode, resultCode, data);
     }
+
+
+
 }

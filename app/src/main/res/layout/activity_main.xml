@@ -17,7 +17,7 @@
 
         <Button
             android:id="@+id/buttonStartHuawei"
-            android:layout_width="350dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text=" Start Huawei Camera" />
@@ -33,16 +33,11 @@
 
             <EditText
                 android:id="@+id/editTextFilter"
-                android:layout_width="250dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="text" />
 
-            <Button
-                android:id="@+id/button"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:text="filter" />
         </LinearLayout>
 
         <ListView
