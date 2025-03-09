@@ -38,4 +38,9 @@ public void log(String msg) {
     Log.d("console.log", msg);
 }
 
+@JavascriptInterface
+public void error(String msg) {
+        Log.e("console.log", msg);
+    }
+
 }

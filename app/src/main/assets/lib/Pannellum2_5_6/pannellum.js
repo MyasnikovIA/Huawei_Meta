@@ -568,6 +568,7 @@ function onImageLoad() {
     } else {
         controls.maps.style.display='none';
     }
+
     renderInit();
     setHfov(config.hfov); // possibly adapt hfov after configuration and canvas is complete; prevents empty space on top or bottom by zomming out too much
     setTimeout(function(){isTimedOut = true;}, 500);
@@ -2239,11 +2240,6 @@ function processOptions(isPreview) {
         else
             delete config.author;
     }
-}
-function toggleMapsView() {
-    config
-
-    openNav();
 }
 
 /**

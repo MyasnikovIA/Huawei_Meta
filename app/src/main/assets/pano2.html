@@ -2,30 +2,30 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A simple example</title>
     <link rel="stylesheet" href="file:///android_asset/lib/Pannellum2_5_6/pannellum.css"/>
-    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/pannellum.js"></script>
-    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/libpannellum.js"></script>
-    <!--
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
-    -->
+    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/pannellum.js?ind=1"></script>
+    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/libpannellum.js?ind=1"></script>
 </head>
 <body>
 
 <div id="panorama"></div>
 <script>
-    const queryString = document.location.search;
-    const params = new URLSearchParams(queryString);
-    let canvas = document.getElementById('panorama');
-    canvas.style.width = (window.innerWidth) + 'px';
-    canvas.style.height = (window.innerHeight) + 'px';
-    pannellum.viewer('panorama', {
-        'autoLoad': true,
-        'type': 'equirectangular',
-        'panorama': params.get('img')
-    });
+        let sceneMain={};
+        const queryString = document.location.search;
+        const params = new URLSearchParams(queryString);
+        let canvas = document.getElementById('panorama');
+        canvas.style.width = (window.innerWidth) + 'px';
+        canvas.style.height = (window.innerHeight) + 'px';
+        // json_info = {    "default": {        "firstScene": "scene1"    },    "hotSpotDebug": false,    "hotPointDebug": true,    "sceneFadeDuration": 1000,    "scenes": {        "scene1": {            "hotSpots": [],            "panorama": "\/storage\/emulated\/0\/DCIM\/CV60\/PIC_20250308_152831.jpg",            "autoLoad": true,            "crossOrigin": "use-credentials",            "lon": 0,            "lat": 0,            "orient_azimuth": 0,            "orient_roll": 0,            "orient_pitch": 0,            "title": "title:PIC_20250308_152831",            "pitch": -3.5001450183561142,            "yaw": 172.69391364740358        }    }}
+
+        imgInfoPath = params.get('img');
+        imgInnfoJson = JSON.parse(params.get('json_info'));
+        console.log('imgInfoPath = '+imgInfoPath);
+        sceneMain = pannellum.viewer('panorama',imgInnfoJson);
+        sceneMain.setPitch(imgInnfoJson.scenes.scene1.pitch);
+        sceneMain.setYaw(imgInnfoJson.scenes.scene1.yaw);
+        // Сохранить JSON объект в текстовой файл
+        // panorama.saveInfoJson(imgInfoPath,JSON.stringify(imgInnfoJson));
 </script>
 
 </body>
