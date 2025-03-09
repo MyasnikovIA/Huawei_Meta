@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +160,7 @@ public class FileBrowser {
                 // Сортировка файлов по имени
                 Collections.sort(fileList);
             }
+            sortFileListByDate();
         } else {
             Toast.makeText(appCompatActivity, "Каталог не найден", Toast.LENGTH_SHORT).show();
         }
@@ -216,6 +218,32 @@ public class FileBrowser {
             fos.close();
         } catch (IOException e) {
             Log.e(TAG, "createTextFile: " + e.toString());
+        }
+    }
+
+    /**
+     * Сортировка списка фаылов по дате создания файлов.
+     */
+    private void sortFileListByDate() {
+        List<Map.Entry<String, File>> entries = new ArrayList<>(fileListAbs.entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<String, File>>() {
+            @Override
+            public int compare(Map.Entry<String, File> entry1, Map.Entry<String, File> entry2) {
+                long file1Date = entry1.getValue().lastModified();
+                long file2Date = entry2.getValue().lastModified();
+                return Long.compare(file1Date, file2Date);
+            }
+        });
+        fileListAbs.clear();
+        for (Map.Entry<String, File> entry : entries) {
+            fileListAbs.put(entry.getKey(), entry.getValue());
+        }
+        fileList.clear();
+        for (Map.Entry<String, File> entry : entries) {
+            fileList.add(entry.getKey());
+        }
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
         }
     }
 }
