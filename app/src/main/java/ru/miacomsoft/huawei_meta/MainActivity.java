@@ -20,6 +20,10 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -85,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
         fileBrowser.onClick((File file)->{
             panorama.getPhoto(R.id.webView,file);
         });
-
     }
 
 
@@ -124,9 +127,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-       // permissionFile.onActivityResult(requestCode, resultCode, data);
+        // permissionFile.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Panorama.REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            String selectPanoString = data.getStringExtra("SELECT_PANO");
+            if (selectPanoString != null) {
+                try {
+                    if (!selectPanoString.equals("{}")) {
+                        panorama.addHotSpot(new JSONObject(selectPanoString));
+                    }
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
-
 
 
 }

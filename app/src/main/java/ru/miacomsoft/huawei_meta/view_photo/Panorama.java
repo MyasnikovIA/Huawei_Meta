@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -19,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.CountDownLatch;
 
 import ru.miacomsoft.huawei_meta.view_photo.lib.SqlLiteOrm;
 import ru.miacomsoft.huawei_meta.view_photo.libjs.Android;
@@ -27,6 +29,13 @@ import ru.miacomsoft.huawei_meta.view_photo.libjs.LocalStorage;
 import ru.miacomsoft.huawei_meta.view_photo.libjs.PanoramaJs;
 
 public class Panorama {
+    public interface CallbackJSONObjectEmptyReturn {
+        void call(JSONObject file);
+    }
+
+    private String jsResult="";
+    private CountDownLatch latch;
+    public static final int REQUEST_CODE = 31001;
     private String TAG="view_photo.Panorama";
     private WebView myWebView;
     private SqlLiteOrm sqlLiteORM;
@@ -69,11 +78,42 @@ public class Panorama {
         }
         String imageInfoJsonStr = readTextFile(fileInfo.getParentFile(), fileInfo.getName());
         // myWebView.loadUrl(imagePath);
-        myWebView.loadUrl("file:///android_asset/pano2.html?img="+fileInfo.getAbsolutePath()+"&width="+myWebView.getWidth()+"&height="+myWebView.getHeight()+"&json_info="+imageInfoJsonStr);
+        myWebView.loadUrl("file:///android_asset/pano2.html?img="+fileInfo.getAbsolutePath()+"&width="+myWebView.getWidth()+"&height="+myWebView.getHeight()+"&json_info="+imageInfoJsonStr+"&path_dir="+file.getParentFile().getAbsolutePath());
         StringBuffer sb = new StringBuffer();
         sb.append("javascript: ").append("local_file='").append("file://"+file.getAbsolutePath()).append("';");
+        sb.append("path_dir = '"+file.getParentFile().getAbsolutePath()+"';");
         sb.append("console.log('------'+local_file);");
+        sb.append("console.log('------'+path_dir);");
         myWebView.loadUrl(sb.toString());
+    }
+
+    public void selectPointPano(CallbackJSONObjectEmptyReturn callbackJSONObjectEmptyReturn) {
+        if (myWebView != null) {
+            // Выполняем JavaScript-код для получения значения переменной
+            myWebView.evaluateJavascript("(function() { return window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw();})();", value -> {
+                try {
+                    String[] valueArr = value.split("#");
+                    JSONObject loocAtJson = new JSONObject();
+                    loocAtJson.put("path_dir", valueArr[0]);
+                    loocAtJson.put("pitch", valueArr[1]);
+                    loocAtJson.put("yaw", valueArr[2]);
+                    callbackJSONObjectEmptyReturn.call(loocAtJson);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            callbackJSONObjectEmptyReturn.call(new JSONObject());
+        }
+    }
+
+    public void addHotSpot(JSONObject hotSpot) {
+        try {
+            // todo: написать процедуру добавления точки перехода на новую сцену
+            Toast.makeText(appCompatActivity, hotSpot.toString(4), Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void getSaveInfo() {
@@ -85,7 +125,6 @@ public class Panorama {
         sb.append("panorama.saveInfoJson(imgInfoPath,JSON.stringify(imgInnfoJson));");
         sb.append("console.log('imgInnfoJson--'+JSON.stringify(imgInnfoJson));");
         myWebView.loadUrl(sb.toString());
-
     }
 
     /**

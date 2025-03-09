@@ -27,16 +27,22 @@
 
             <Button
                 android:id="@+id/buttonStartHuawei"
-                android:layout_width="180dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start Huawei Cam" />
+                android:text="Cam" />
 
             <Button
                 android:id="@+id/buttonSaveImageInfo"
-                android:layout_width="180dp"
+                android:layout_width="56dp"
                 android:layout_height="wrap_content"
-                android:text="Save image info"
+                android:text="S"
                 android:textStyle="normal|bold|italic" />
+
+            <Button
+                android:id="@+id/buttonMap"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:text="M" />
 
         </LinearLayout>
 

@@ -10,22 +10,30 @@
 
 <div id="panorama"></div>
 <script>
-        let sceneMain={};
-        const queryString = document.location.search;
-        const params = new URLSearchParams(queryString);
-        let canvas = document.getElementById('panorama');
-        canvas.style.width = (window.innerWidth) + 'px';
-        canvas.style.height = (window.innerHeight) + 'px';
-        // json_info = {    "default": {        "firstScene": "scene1"    },    "hotSpotDebug": false,    "hotPointDebug": true,    "sceneFadeDuration": 1000,    "scenes": {        "scene1": {            "hotSpots": [],            "panorama": "\/storage\/emulated\/0\/DCIM\/CV60\/PIC_20250308_152831.jpg",            "autoLoad": true,            "crossOrigin": "use-credentials",            "lon": 0,            "lat": 0,            "orient_azimuth": 0,            "orient_roll": 0,            "orient_pitch": 0,            "title": "title:PIC_20250308_152831",            "pitch": -3.5001450183561142,            "yaw": 172.69391364740358        }    }}
+    var selectPoint={};
+    var path_dir;
+    onDblClickScene = function(coords) {
+       selectPoint = coords;
+       selectPoint['path_dir'] = path_dir;
+       console.log('selectPoint.yaw='+selectPoint.yaw+'selectPoint.pitch='+selectPoint.pitch);
+       panorama.selectNewPoint(imgInfoPath, JSON.stringify(imgInnfoJson), JSON.stringify(selectPoint), path_dir);
+    };
 
-        imgInfoPath = params.get('img');
-        imgInnfoJson = JSON.parse(params.get('json_info'));
-        console.log('imgInfoPath = '+imgInfoPath);
-        sceneMain = pannellum.viewer('panorama',imgInnfoJson);
-        sceneMain.setPitch(imgInnfoJson.scenes.scene1.pitch);
-        sceneMain.setYaw(imgInnfoJson.scenes.scene1.yaw);
-        // Сохранить JSON объект в текстовой файл
-        // panorama.saveInfoJson(imgInfoPath,JSON.stringify(imgInnfoJson));
+    let sceneMain={};
+    const queryString = document.location.search;
+    const params = new URLSearchParams(queryString);
+    let canvas = document.getElementById('panorama');
+    canvas.style.width = (window.innerWidth) + 'px';
+    canvas.style.height = (window.innerHeight) + 'px';
+    imgInfoPath = params.get('img');
+    path_dir = params.get('path_dir');
+    imgInnfoJson = JSON.parse(params.get('json_info'));
+    imgInnfoJson.onDblClick = onDblClickScene;
+    sceneMain = pannellum.viewer('panorama', imgInnfoJson);
+    sceneMain.setPitch(imgInnfoJson.scenes.scene1.pitch);
+    sceneMain.setYaw(imgInnfoJson.scenes.scene1.yaw);
+    // Сохранить JSON объект в текстовой файл
+    // panorama.saveInfoJson(imgInfoPath,JSON.stringify(imgInnfoJson),PATH_DIR);
 </script>
 
 </body>
