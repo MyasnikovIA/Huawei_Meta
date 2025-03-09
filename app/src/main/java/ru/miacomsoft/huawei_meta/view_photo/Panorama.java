@@ -1,5 +1,8 @@
 package ru.miacomsoft.huawei_meta.view_photo;
 
+import android.content.Context;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -47,7 +50,24 @@ public class Panorama {
         }
         // String imagePath = "file:///storage/emulated/0/DCIM/PANORAMA_HUAWEI/Camera/img.jpg";
         String imagePath = "file://"+file.getAbsolutePath();
-        myWebView.loadUrl(imagePath);
+        // myWebView.loadUrl(imagePath);
+        // Получаем экземпляр WindowManager
+        WindowManager wm = (WindowManager) appCompatActivity.getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics metrics = new DisplayMetrics();
+        wm.getDefaultDisplay().getMetrics(metrics);
+
+        myWebView.loadUrl("file:///android_asset/pano2.html?img="+imagePath+"&width="+myWebView.getWidth()+"&height="+myWebView.getHeight());
+
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("javascript: ").append("local_file='").append("file://"+file.getAbsolutePath()).append("';");
+        sb.append("console.log('------'+local_file);");
+        sb.append("console.log('metrics.widthPixels=="+metrics.heightPixels+"');");
+        sb.append("console.log('myWebView.getWidth()=="+myWebView.getWidth()+"');");
+        sb.append("console.log('myWebView.getHeight()=="+myWebView.getHeight()+"');");
+        // sb.append("viewPanoImage(local_file);");
+        // sb.append("setTimeout(function tick() { window.loadPano(local_file);}, 1000);");
+        myWebView.loadUrl(sb.toString());
     }
 
 }

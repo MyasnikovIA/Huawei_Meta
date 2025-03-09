@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void onStartApp() {
-        PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/PANORAMA_HUAWEI/";
+        PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
         startservice();
         final Button buttonStartHuawei = (Button)findViewById(R.id.buttonStartHuawei);
         buttonStartHuawei.setOnClickListener(v -> {
