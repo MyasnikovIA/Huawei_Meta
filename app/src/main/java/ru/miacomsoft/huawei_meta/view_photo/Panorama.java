@@ -1,6 +1,7 @@
 package ru.miacomsoft.huawei_meta.view_photo;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
@@ -8,6 +9,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
@@ -15,11 +17,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
@@ -45,15 +54,18 @@ public class Panorama {
     private SqlLiteOrm sqlLiteORM;
     private AppCompatActivity appCompatActivity;
     private File filePano;
+    private int webViewId;
+    private JSONObject imageInfoJson;
 
     public Panorama(AppCompatActivity appCompatActivity) {
         this.appCompatActivity = appCompatActivity;
     }
 
-    public void getPhoto(int WebViewId, File file,JSONObject vars) {
+    public void getPhoto(int webViewId, File file,JSONObject vars) {
+        this.webViewId = webViewId;
         filePano = file;
         sqlLiteORM = new SqlLiteOrm(appCompatActivity);
-        myWebView = (WebView) appCompatActivity.findViewById(WebViewId);
+        myWebView = (WebView) appCompatActivity.findViewById(webViewId);
         myWebView.clearCache(true);
         myWebView.clearHistory();
         WebSettings settings = myWebView.getSettings();
@@ -82,8 +94,12 @@ public class Panorama {
             createEmptyInfoFileJson(file);
         }
         String imageInfoJsonStr = readTextFile(fileInfo.getParentFile(), fileInfo.getName());
+        try {
+            imageInfoJson = new JSONObject(imageInfoJsonStr);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
         // myWebView.loadUrl(imagePath);
-
 
         String from_pitch="";
         String from_yaw="";
@@ -143,9 +159,22 @@ public class Panorama {
 
     public void addHotSpot(JSONObject hotSpot) {
         try {
-            // todo: написать процедуру добавления точки перехода на новую сцену
-
-            Toast.makeText(appCompatActivity, hotSpot.toString(4), Toast.LENGTH_LONG).show();
+            String panoramaPathJpeg = hotSpot.getString("panorama").replace("\"","");
+            File infoFilePath = new File(panoramaPathJpeg);
+            imageInfoJson = new JSONObject(readTextFile(infoFilePath.getParentFile(),infoFilePath.getName()));
+            JSONObject hotSpotNew = new JSONObject();
+            hotSpotNew.put("title","");
+            hotSpotNew.put("yaw", new BigDecimal(Double.valueOf(hotSpot.getString("from_yaw"))));
+            hotSpotNew.put("pitch", new BigDecimal(Double.valueOf(hotSpot.getString("from_pitch"))));
+            hotSpotNew.put("point_yaw", new BigDecimal(Double.valueOf(hotSpot.getString("yaw")))); // Куда смотреть после перехода на новую точку
+            hotSpotNew.put("point_pitch", new BigDecimal(Double.valueOf(hotSpot.getString("pitch"))));// Куда смотреть после перехода на новую точку
+            hotSpotNew.put("panorama_url", infoFilePath.getAbsolutePath()); // добавить путь к JSON файлу
+            hotSpotNew.put("type", "scene");
+            hotSpotNew.put("text_pint", "");
+            hotSpotNew.put("sceneId", "scene_"+new Date().getTime());
+            imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").getJSONArray("hotSpots").put(hotSpotNew);
+            createTextFile(infoFilePath.getParentFile(),infoFilePath.getName(),imageInfoJson.toString(4));
+            getPhoto(webViewId, filePano, new JSONObject());
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -203,15 +232,18 @@ public class Panorama {
      * @param fileName - имя создаваемого файла
      * @param content - содержимое, которе помещается в файл
      */
-    private void createTextFile( File directory , String fileName, String content) {
+    private void createTextFile(File directory, String fileName, String content) {
+        // Создаем директорию, если она не существует
         if (!directory.exists()) {
             directory.mkdirs();
         }
+
+        // Создаем файл
         File file = new File(directory, fileName);
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            fos.write(content.getBytes());
-            fos.flush();
-            fos.close();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            // Записываем содержимое в файл
+            writer.write(content);
         } catch (IOException e) {
             Log.e(TAG, "createTextFile: " + e.toString());
         }

@@ -43,7 +43,7 @@ public class SelectPointActivity extends AppCompatActivity {
         buttonReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                panorama.getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+from_pitch+'#'+from_yaw",(String value)-> {
+                panorama.getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+from_pitch+'#'+from_yaw+'#'+imgInfoPath",(String value)-> {
                     String[] valueArr = value.split("#");
                     try {
                         JSONObject loocAtJson = new JSONObject();
@@ -52,6 +52,7 @@ public class SelectPointActivity extends AppCompatActivity {
                         loocAtJson.put("yaw", valueArr[2]);
                         loocAtJson.put("from_pitch", valueArr[3]);
                         loocAtJson.put("from_yaw", valueArr[4]);
+                        loocAtJson.put("panorama", valueArr[5]);
                         // Создаем Intent для возврата данных
                         Intent resultIntent = new Intent();
                         resultIntent.putExtra("SELECT_PANO", loocAtJson.toString());
