@@ -18,6 +18,8 @@
     onDblClickScene = function(coords) {
        selectPoint = coords;
        selectPoint['path_dir'] = path_dir;
+       selectPoint['from_pitch'] = from_pitch;
+       selectPoint['from_yaw'] = from_yaw;
        console.log('selectPoint.yaw='+selectPoint.yaw+'selectPoint.pitch='+selectPoint.pitch);
        panorama.selectNewPoint(imgInfoPath, JSON.stringify(imgInnfoJson), JSON.stringify(selectPoint), path_dir);
     };
@@ -29,6 +31,8 @@
     canvas.style.width = (window.innerWidth) + 'px';
     canvas.style.height = (window.innerHeight) + 'px';
     imgInfoPath = params.get('img');
+    from_pitch = params.get('from_pitch');
+    from_yaw = params.get('from_yaw');
     path_dir = params.get('path_dir');
     imgInnfoJson = JSON.parse(params.get('json_info'));
     imgInnfoJson.onDblClick = onDblClickScene;

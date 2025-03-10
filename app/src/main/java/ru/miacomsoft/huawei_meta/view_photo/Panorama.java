@@ -83,7 +83,22 @@ public class Panorama {
         }
         String imageInfoJsonStr = readTextFile(fileInfo.getParentFile(), fileInfo.getName());
         // myWebView.loadUrl(imagePath);
-        myWebView.loadUrl("file:///android_asset/pano2.html?img=" + fileInfo.getAbsolutePath() + "&width=" + myWebView.getWidth() + "&height=" + myWebView.getHeight() + "&json_info=" + imageInfoJsonStr + "&path_dir=" + file.getParentFile().getAbsolutePath());
+
+
+        String from_pitch="";
+        String from_yaw="";
+        try {
+            if (vars.has("from_pitch")) {
+                from_pitch = vars.getString("from_pitch");
+            }
+            if (vars.has("from_yaw")) {
+                from_yaw = vars.getString("from_yaw");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "getPhoto vars: " + e.toString());
+        }
+
+        myWebView.loadUrl("file:///android_asset/pano2.html?img=" + fileInfo.getAbsolutePath() + "&width=" + myWebView.getWidth() + "&height=" + myWebView.getHeight() + "&json_info=" + imageInfoJsonStr + "&path_dir=" + file.getParentFile().getAbsolutePath()+"&from_pitch="+from_pitch+"&from_yaw="+from_yaw);
         StringBuffer sb = new StringBuffer();
         sb.append("javascript: ").append("local_file='").append("file://" + file.getAbsolutePath()).append("';");
         sb.append("path_dir = '" + file.getParentFile().getAbsolutePath() + "';");
@@ -129,6 +144,7 @@ public class Panorama {
     public void addHotSpot(JSONObject hotSpot) {
         try {
             // todo: написать процедуру добавления точки перехода на новую сцену
+
             Toast.makeText(appCompatActivity, hotSpot.toString(4), Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
             throw new RuntimeException(e);

@@ -43,14 +43,6 @@ public class SelectPointActivity extends AppCompatActivity {
         buttonReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                StringBuffer sb = new StringBuffer();
-                sb.append("javascript: ");
-                sb.append("console.log('---***---'+window.from_pitch);");
-                sb.append("console.log('---***---'+window.from_yaw);");
-                panorama.myWebView.loadUrl(sb.toString());
-
-
                 panorama.getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+from_pitch+'#'+from_yaw",(String value)-> {
                     String[] valueArr = value.split("#");
                     try {
