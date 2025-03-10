@@ -24,6 +24,16 @@
        panorama.selectNewPoint(imgInfoPath, JSON.stringify(imgInnfoJson), JSON.stringify(selectPoint), path_dir);
     };
 
+    onClickHotSpot = function(hs) {
+        // hs={"title":"","yaw":-53.236924148647866,"pitch":-12.381230171877444,"point_yaw":115.1247005243223,"point_pitch":49.372493628283046,"panorama_url":"/storage/emulated/0/DCIM/CV60/PIC_20250307_221549.json","type":"scene","text_pint":"","sceneId":"scene_1741646190151","div":{"clicked":true}}
+        imgInnfoJson = JSON.parse(panorama.readInfoJson(hs['panorama_url']));
+        imgInnfoJson.onDblClick = onDblClickScene;
+        imgInnfoJson.onClickHotSpot = onClickHotSpot;
+        sceneMain = pannellum.viewer('panorama', imgInnfoJson);
+        sceneMain.setPitch(hs['point_pitch']);
+        sceneMain.setYaw(hs['point_yaw']);
+    }
+
     let sceneMain={};
     const queryString = document.location.search;
     const params = new URLSearchParams(queryString);
@@ -37,6 +47,7 @@
     console.log("params.get('json_info') "+params.get('json_info'))
     imgInnfoJson = JSON.parse(params.get('json_info'));
     imgInnfoJson.onDblClick = onDblClickScene;
+    imgInnfoJson.onClickHotSpot = onClickHotSpot;
     sceneMain = pannellum.viewer('panorama', imgInnfoJson);
     sceneMain.setPitch(imgInnfoJson.scenes.scene1.pitch);
     sceneMain.setYaw(imgInnfoJson.scenes.scene1.yaw);

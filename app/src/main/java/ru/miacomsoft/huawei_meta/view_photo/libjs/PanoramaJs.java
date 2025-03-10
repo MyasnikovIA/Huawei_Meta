@@ -11,9 +11,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import ru.miacomsoft.huawei_meta.SelectPointActivity;
 import ru.miacomsoft.huawei_meta.view_photo.Panorama;
@@ -39,6 +43,27 @@ public class PanoramaJs {
         } catch (JSONException e) {
             Log.e("console.log", "saveInfoJson error "+e.toString());
         }
+    }
+
+
+    @JavascriptInterface
+    public String readInfoJson(String imgInfoPath) {
+        File file = new File(imgInfoPath);
+        StringBuilder content = new StringBuilder();
+        if (!file.exists()) {
+            Log.e(TAG, "readTextFile: File does not exist");
+            return null;
+        }
+        try (FileInputStream fis = new FileInputStream(file);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "readTextFile: " + e.toString());
+        }
+        return content.toString();
     }
 
     /**
