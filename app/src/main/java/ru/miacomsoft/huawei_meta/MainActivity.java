@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
         fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
         fileBrowser.onClick((File file)->{
-            panorama.getPhoto(R.id.webView,file);
+            panorama.getPhoto(R.id.webView,file,new JSONObject());
         });
     }
 

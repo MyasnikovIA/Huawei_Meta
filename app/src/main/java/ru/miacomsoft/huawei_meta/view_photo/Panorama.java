@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
 import ru.miacomsoft.huawei_meta.view_photo.lib.SqlLiteOrm;
@@ -30,22 +31,26 @@ import ru.miacomsoft.huawei_meta.view_photo.libjs.PanoramaJs;
 
 public class Panorama {
     public interface CallbackJSONObjectEmptyReturn {
-        void call(JSONObject file);
+        void call(JSONObject value);
+    }
+    public interface CallbackStringEmptyReturn {
+        void call(String value);
     }
 
-    private String jsResult="";
+    private String jsResult = "";
     private CountDownLatch latch;
     public static final int REQUEST_CODE = 31001;
-    private String TAG="view_photo.Panorama";
-    private WebView myWebView;
+    private String TAG = "view_photo.Panorama";
+    public WebView myWebView;
     private SqlLiteOrm sqlLiteORM;
     private AppCompatActivity appCompatActivity;
     private File filePano;
-    public Panorama(AppCompatActivity appCompatActivity){
-        this.appCompatActivity  = appCompatActivity;
+
+    public Panorama(AppCompatActivity appCompatActivity) {
+        this.appCompatActivity = appCompatActivity;
     }
 
-    public void getPhoto(int WebViewId , File file) {
+    public void getPhoto(int WebViewId, File file,JSONObject vars) {
         filePano = file;
         sqlLiteORM = new SqlLiteOrm(appCompatActivity);
         myWebView = (WebView) appCompatActivity.findViewById(WebViewId);
@@ -71,39 +76,53 @@ public class Panorama {
             throw new RuntimeException(e);
         }
         // String imagePath = "file:///storage/emulated/0/DCIM/PANORAMA_HUAWEI/Camera/img.jpg";
-        String imagePath = "file://"+file.getAbsolutePath();
-        File fileInfo = new File(file.getParentFile().getAbsolutePath(),file.getName().substring(0,file.getName().length()-4)+".json");
+        String imagePath = "file://" + file.getAbsolutePath();
+        File fileInfo = new File(file.getParentFile().getAbsolutePath(), file.getName().substring(0, file.getName().length() - 4) + ".json");
         if (!fileInfo.exists()) {
             createEmptyInfoFileJson(file);
         }
         String imageInfoJsonStr = readTextFile(fileInfo.getParentFile(), fileInfo.getName());
         // myWebView.loadUrl(imagePath);
-        myWebView.loadUrl("file:///android_asset/pano2.html?img="+fileInfo.getAbsolutePath()+"&width="+myWebView.getWidth()+"&height="+myWebView.getHeight()+"&json_info="+imageInfoJsonStr+"&path_dir="+file.getParentFile().getAbsolutePath());
+        myWebView.loadUrl("file:///android_asset/pano2.html?img=" + fileInfo.getAbsolutePath() + "&width=" + myWebView.getWidth() + "&height=" + myWebView.getHeight() + "&json_info=" + imageInfoJsonStr + "&path_dir=" + file.getParentFile().getAbsolutePath());
         StringBuffer sb = new StringBuffer();
-        sb.append("javascript: ").append("local_file='").append("file://"+file.getAbsolutePath()).append("';");
-        sb.append("path_dir = '"+file.getParentFile().getAbsolutePath()+"';");
-        sb.append("console.log('------'+local_file);");
-        sb.append("console.log('------'+path_dir);");
+        sb.append("javascript: ").append("local_file='").append("file://" + file.getAbsolutePath()).append("';");
+        sb.append("path_dir = '" + file.getParentFile().getAbsolutePath() + "';");
+        for (Iterator<String> it = vars.keys(); it.hasNext(); ) {
+            try {
+                String keyStr = it.next();
+                Object keyvalue = vars.get(keyStr);
+                sb.append(keyStr).append(" = '").append(keyvalue).append("';");
+            } catch (Exception e) {
+                Log.e(TAG, "getPhoto vars: " + e.toString());
+            }
+        }
+        //sb.append("console.log('------'+path_dir);");
         myWebView.loadUrl(sb.toString());
     }
-
-    public void selectPointPano(CallbackJSONObjectEmptyReturn callbackJSONObjectEmptyReturn) {
+    public void setVar(String key, String value) {
         if (myWebView != null) {
-            // Выполняем JavaScript-код для получения значения переменной
-            myWebView.evaluateJavascript("(function() { return window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw();})();", value -> {
-                try {
-                    String[] valueArr = value.split("#");
-                    JSONObject loocAtJson = new JSONObject();
-                    loocAtJson.put("path_dir", valueArr[0]);
-                    loocAtJson.put("pitch", valueArr[1]);
-                    loocAtJson.put("yaw", valueArr[2]);
-                    callbackJSONObjectEmptyReturn.call(loocAtJson);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
+            StringBuffer sb = new StringBuffer();
+            sb.append("javascript: ").append("").append(key).append("=").append("'").append(value).append("';");
+            sb.append("console.log('------'+"+key+");");
+            myWebView.loadUrl(sb.toString());
+        }
+    }
+
+    public void setVar(String key, JSONObject value) {
+        if (myWebView != null) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("javascript: ").append(key).append("=").append("").append(value.toString()).append(";");
+            myWebView.loadUrl(sb.toString());
+        }
+    }
+
+    public void getVar(String key,CallbackStringEmptyReturn callbackJSONObjectEmptyReturn) {
+        if (myWebView != null) {
+            myWebView.evaluateJavascript("(function() { return "+key+";})();", value -> {
+                callbackJSONObjectEmptyReturn.call(value);
             });
         } else {
-            callbackJSONObjectEmptyReturn.call(new JSONObject());
+            callbackJSONObjectEmptyReturn.call(null);
         }
     }
 
@@ -185,23 +204,20 @@ public class Panorama {
     private String readTextFile(File directory, String fileName) {
         File file = new File(directory, fileName);
         StringBuilder content = new StringBuilder();
-
         if (!file.exists()) {
             Log.e(TAG, "readTextFile: File does not exist");
-            return null; // Возвращаем null, если файла нет
+            return null;
         }
-
         try (FileInputStream fis = new FileInputStream(file);
              BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                content.append(line).append("\n"); // Добавляем новую строку после каждого прочитанного фрагмента
+                content.append(line).append("\n");
             }
         } catch (IOException e) {
             Log.e(TAG, "readTextFile: " + e.toString());
         }
-
-        return content.toString(); // Возвращаем содержимое файла в виде строки
+        return content.toString();
     }
 
 }

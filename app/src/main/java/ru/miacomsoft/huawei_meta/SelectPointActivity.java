@@ -43,18 +43,48 @@ public class SelectPointActivity extends AppCompatActivity {
         buttonReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Создаем Intent для возврата данных
-                panorama.selectPointPano((JSONObject obj)->{
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("SELECT_PANO", obj.toString());
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
+
+                StringBuffer sb = new StringBuffer();
+                sb.append("javascript: ");
+                sb.append("console.log('---***---'+window.from_pitch);");
+                sb.append("console.log('---***---'+window.from_yaw);");
+                panorama.myWebView.loadUrl(sb.toString());
+
+
+                panorama.getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+from_pitch+'#'+from_yaw",(String value)-> {
+                    String[] valueArr = value.split("#");
+                    try {
+                        JSONObject loocAtJson = new JSONObject();
+                        loocAtJson.put("path_dir", valueArr[0]);
+                        loocAtJson.put("pitch", valueArr[1]);
+                        loocAtJson.put("yaw", valueArr[2]);
+                        loocAtJson.put("from_pitch", valueArr[3]);
+                        loocAtJson.put("from_yaw", valueArr[4]);
+                        // Создаем Intent для возврата данных
+                        Intent resultIntent = new Intent();
+                        resultIntent.putExtra("SELECT_PANO", loocAtJson.toString());
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    } catch (Exception e) {
+                        Log.e(TAG, "buttonSaveImageInfo.onClick: " + e.toString());
+                    }
                 });
             }
         });
         fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,path_dir);
         fileBrowser.onClick((File file)->{
-            panorama.getPhoto(R.id.webView,file);
+            JSONObject vars = new JSONObject();
+            try {
+                if (positionPoint.has("yaw")) {
+                    vars.put("from_yaw", positionPoint.getString("yaw"));
+                }
+                if (positionPoint.has("pitch")) {
+                    vars.put("from_pitch", positionPoint.getString("pitch"));
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, "FileListView.onClick: " + e.toString());
+            }
+            panorama.getPhoto(R.id.webView,file,vars);
         });
 
     }
