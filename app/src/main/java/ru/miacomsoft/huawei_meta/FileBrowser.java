@@ -148,8 +148,8 @@ public class FileBrowser {
                     if (file.isFile()) {
                         String fileName = file.getName();
                         if (fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase().equals("jpg")) {
-                            File fileInfoJson = new File(fileName.substring(0,fileName.lastIndexOf("."))+".json");
-                            if (!fileInfoJson.exists() || !fileInfoJson.isFile()) {
+                            File fileInfoJson = new File(file.getParentFile(), fileName.substring(0,fileName.lastIndexOf("."))+".json");
+                            if (!fileInfoJson.exists()) {
                                 createEmptyInfoFileJson(file);
                             }
                             fileList.add(file.getName());

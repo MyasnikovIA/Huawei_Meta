@@ -34,6 +34,7 @@
     from_pitch = params.get('from_pitch');
     from_yaw = params.get('from_yaw');
     path_dir = params.get('path_dir');
+    console.log("params.get('json_info') "+params.get('json_info'))
     imgInnfoJson = JSON.parse(params.get('json_info'));
     imgInnfoJson.onDblClick = onDblClickScene;
     sceneMain = pannellum.viewer('panorama', imgInnfoJson);
