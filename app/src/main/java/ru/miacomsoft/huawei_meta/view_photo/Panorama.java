@@ -50,6 +50,7 @@ public class Panorama {
     private String jsResult = "";
     private CountDownLatch latch;
     public static final int REQUEST_CODE = 31001;
+    public static final int REQUEST_CODE_EDIT = 31002;
     private String TAG = "view_photo.Panorama";
     public WebView myWebView;
     private SqlLiteOrm sqlLiteORM;
@@ -159,6 +160,63 @@ public class Panorama {
         }
     }
 
+    public void deleteHotSpot(JSONObject hotSpot) {
+        if (myWebView == null || hotSpot==null) return;
+        try {
+            File infoFilePath = new File(hotSpot.getString("panorama_url_from"));
+            imageInfoJson = new JSONObject(readTextFile(infoFilePath.getParentFile(),infoFilePath.getName()));
+            for (int i=0; i < imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").getJSONArray("hotSpots").length(); i++) {
+                JSONObject hotSpotOne  = imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").getJSONArray("hotSpots").getJSONObject(i);
+                if (hotSpotOne.getString("sceneId").equals(hotSpot.getString("sceneId"))) {
+                    imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").getJSONArray("hotSpots").remove(i);
+                }
+            }
+            createTextFile(fileInfo.getParentFile(),fileInfo.getName(),imageInfoJson.toString(4));
+            getPhoto(webViewId, filePano, new JSONObject());
+
+            // {"title":"","yaw":-53.236924148647866,"pitch":-12.381230171877444,"point_yaw":115.1247005243223,"point_pitch":49.372493628283046,
+            // "panorama_url":"\/storage\/emulated\/0\/DCIM\/CV60\/PIC_20250307_221549.json",
+            // "type":"scene",
+            // "text_pint":"",
+            // "sceneId":"scene_1741646190151","div":{"clicked":true}}
+        } catch (Exception e) {
+            Log.e(TAG, "Panorama.gotoHotSpot: " + e.toString());
+        }
+    }
+
+    public void reloadPanorama(JSONObject hotSpot) {
+        if (myWebView == null || hotSpot==null) return;
+        try {
+            StringBuffer sb = new StringBuffer();
+            sb.append("javascript: ");
+            sb.append("mgInnfoJson = JSON.parse(panorama.readInfoJson('" + hotSpot.getString("panorama_url_from") + "'));");
+            sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
+            sb.append("imgInnfoJson.onClickHotSpot = onClickHotSpot;");
+            sb.append("sceneMain = pannellum.viewer('panorama', imgInnfoJson);");
+            sb.append("sceneMain.setPitch("+hotSpot.getString("pitch")+");");
+            sb.append("sceneMain.setYaw("+hotSpot.getString("yaw")+");");
+            myWebView.loadUrl(sb.toString());
+        }catch (Exception e) {
+            Log.e(TAG, "Panorama.gotoHotSpot: " + e.toString());
+        }
+    }
+
+    public void gotoHotSpot(JSONObject hotSpot) {
+        if (myWebView == null || hotSpot==null) return;
+        try {
+            StringBuffer sb = new StringBuffer();
+            sb.append("javascript: ");
+            sb.append("onGotoHotSpot(");
+            sb.append("'").append(hotSpot.getString("panorama_url")).append("'");
+            sb.append(",").append(hotSpot.getString("point_pitch")).append("");
+            sb.append(",").append(hotSpot.getString("point_yaw")).append("");
+            sb.append(");");
+            myWebView.loadUrl(sb.toString());
+        }catch (Exception e) {
+            Log.e(TAG, "Panorama.gotoHotSpot: " + e.toString());
+        }
+    }
+
     public void addHotSpot(JSONObject hotSpot) {
         try {
             String panoramaPathJpeg = hotSpot.getString("panorama").replace("\"","");
@@ -178,7 +236,7 @@ public class Panorama {
             createTextFile(fileInfo.getParentFile(),fileInfo.getName(),imageInfoJson.toString(4));
             getPhoto(webViewId, filePano, new JSONObject());
         } catch (JSONException e) {
-            throw new RuntimeException(e);
+            Log.e(TAG, "Panorama.addHotSpot: " + e.toString());
         }
     }
 
@@ -200,7 +258,7 @@ public class Panorama {
                 createTextFile(infoFilePath.getParentFile(),infoFilePath.getName(),imageInfoJson.toString(4));
                 getPhoto(webViewId, filePano, new JSONObject());
             } catch (Exception e) {
-                Log.e(TAG, "buttonSaveImageInfo.onClick: " + e.toString());
+                Log.e(TAG, "Panorama.getSaveInfo: " + e.toString());
             }
         });
 //        StringBuffer sb = new StringBuffer();
@@ -288,5 +346,4 @@ public class Panorama {
         }
         return content.toString();
     }
-
 }

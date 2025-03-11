@@ -1,34 +1,22 @@
 package ru.miacomsoft.huawei_meta;
 
 import android.app.ActivityManager;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.util.Log;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import ru.miacomsoft.huawei_meta.view_photo.Panorama;
 
@@ -41,10 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private String PATH_DIR;
     private Intent serviceIntent;
     private FileBrowser fileBrowser;
-
     private Panorama panorama;
-
-
+    private String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         buttonStartHuawei.setOnClickListener(v -> {
             runExternalApp.run("com.huawei.cvIntl60");
         });
-        final Button buttonSaveImageInfo = (Button)findViewById(R.id.buttonSaveImageInfo);
+        final Button buttonSaveImageInfo = (Button)findViewById(R.id.buttonGotoHotSpot);
         buttonSaveImageInfo.setOnClickListener(v -> {
             panorama.getSaveInfo();
         });
@@ -137,6 +123,27 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
+                }
+            }
+        } else if (requestCode == Panorama.REQUEST_CODE_EDIT && resultCode == RESULT_OK && data != null) {
+            String hot_spot = data.getStringExtra("HOT_SPOT");
+            if (hot_spot != null) {
+                try {
+                    if (!hot_spot.equals("{}")) {
+                        String action = data.getStringExtra("ACTION");
+                        JSONObject hotSpot = new JSONObject(hot_spot);
+                        if (action != null) {
+                            if (action.equals("CANCELLATION")) {
+                                panorama.reloadPanorama(hotSpot);
+                            } else  if (action.equals("GOTO_HOT_SPOT")) {
+                                panorama.gotoHotSpot(hotSpot);
+                            } else  if (action.equals("DELETE_HOT_SPOT")) {
+                                panorama.deleteHotSpot(hotSpot);
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    Log.e(TAG, "createEmptyInfoFileJson: " + e.toString());
                 }
             }
         }

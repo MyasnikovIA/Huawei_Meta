@@ -19,6 +19,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+
+import ru.miacomsoft.huawei_meta.EditPointActivity;
 import ru.miacomsoft.huawei_meta.SelectPointActivity;
 import ru.miacomsoft.huawei_meta.view_photo.Panorama;
 
@@ -87,14 +93,19 @@ public class PanoramaJs {
     }
 
     @JavascriptInterface
-    public void selectNewPoint(String imgInfoPath, String imgInfojsonStr, String positionNewPoint,String path_dir) {
-        Intent intent = new Intent(parentActivity.getApplicationContext(), SelectPointActivity.class);
-        intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
-        intent.putExtra("imgInfojsonStr", imgInfojsonStr);    // Передаем число
-        intent.putExtra("positionNewPoint", positionNewPoint);    // Передаем число
-        intent.putExtra("path_dir", path_dir);    // Передаем число
-        parentActivity.startActivityForResult(intent, Panorama.REQUEST_CODE);
+    public void selectNewPoint(String imgInfoPath, String imgInfojsonStr, String positionNewPoint,String path_dir,String actionType) {
+        if (actionType.equals("add")) {
+            Intent intent = new Intent(parentActivity.getApplicationContext(), SelectPointActivity.class);
+            intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
+            intent.putExtra("imgInfojsonStr", imgInfojsonStr);    // Передаем число
+            intent.putExtra("positionNewPoint", positionNewPoint);    // Передаем число
+            intent.putExtra("path_dir", path_dir);    // Передаем число
+            parentActivity.startActivityForResult(intent, Panorama.REQUEST_CODE);
+        } else if (actionType.equals("edit")) {
+            Intent intent = new Intent(parentActivity.getApplicationContext(), EditPointActivity.class);
+            intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
+            intent.putExtra("hsJsonStr", imgInfojsonStr);    // Передаем число
+            parentActivity.startActivityForResult(intent, Panorama.REQUEST_CODE_EDIT);
+        }
     }
-
-
 }

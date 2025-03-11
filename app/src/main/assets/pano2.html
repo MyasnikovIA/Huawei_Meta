@@ -7,7 +7,6 @@
     <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/libpannellum.js?ind=1"></script>
 </head>
 <body>
-
 <div id="panorama"></div>
 <script>
     var selectPoint={};
@@ -21,17 +20,21 @@
        selectPoint['from_pitch'] = from_pitch;
        selectPoint['from_yaw'] = from_yaw;
        console.log('selectPoint.yaw='+selectPoint.yaw+'selectPoint.pitch='+selectPoint.pitch);
-       panorama.selectNewPoint(imgInfoPath, JSON.stringify(imgInnfoJson), JSON.stringify(selectPoint), path_dir);
+       panorama.selectNewPoint(imgInfoPath, JSON.stringify(imgInnfoJson), JSON.stringify(selectPoint), path_dir,'add');
     };
 
     onClickHotSpot = function(hs) {
-        // hs={"title":"","yaw":-53.236924148647866,"pitch":-12.381230171877444,"point_yaw":115.1247005243223,"point_pitch":49.372493628283046,"panorama_url":"/storage/emulated/0/DCIM/CV60/PIC_20250307_221549.json","type":"scene","text_pint":"","sceneId":"scene_1741646190151","div":{"clicked":true}}
-        imgInnfoJson = JSON.parse(panorama.readInfoJson(hs['panorama_url']));
+        hs['panorama_url_from'] = imgInfoPath;
+        panorama.selectNewPoint(imgInfoPath, JSON.stringify(hs), null, path_dir,'edit');
+    }
+
+    onGotoHotSpot = function(panorama_url, pitch, yaw) {
+        imgInnfoJson = JSON.parse(panorama.readInfoJson(panorama_url));
         imgInnfoJson.onDblClick = onDblClickScene;
         imgInnfoJson.onClickHotSpot = onClickHotSpot;
         sceneMain = pannellum.viewer('panorama', imgInnfoJson);
-        sceneMain.setPitch(hs['point_pitch']);
-        sceneMain.setYaw(hs['point_yaw']);
+        sceneMain.setPitch(pitch);
+        sceneMain.setYaw(yaw);
     }
 
     let sceneMain={};
@@ -51,8 +54,6 @@
     sceneMain = pannellum.viewer('panorama', imgInnfoJson);
     sceneMain.setPitch(imgInnfoJson.scenes.scene1.pitch);
     sceneMain.setYaw(imgInnfoJson.scenes.scene1.yaw);
-    // Сохранить JSON объект в текстовой файл
-    // panorama.saveInfoJson(imgInfoPath,JSON.stringify(imgInnfoJson),PATH_DIR);
 </script>
 
 </body>

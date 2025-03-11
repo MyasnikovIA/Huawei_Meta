@@ -16,7 +16,7 @@
         tools:layout_editor_absoluteX="1dp">
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/textView4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -32,17 +32,23 @@
                 android:text="Cam" />
 
             <Button
-                android:id="@+id/buttonSaveImageInfo"
-                android:layout_width="56dp"
+                android:id="@+id/buttonGotoHotSpot"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="S"
+                android:text="Save"
                 android:textStyle="normal|bold|italic" />
 
             <Button
                 android:id="@+id/buttonMap"
-                android:layout_width="60dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="M" />
+                android:text="Map" />
+
+            <Button
+                android:id="@+id/button6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Del" />
 
         </LinearLayout>
 
@@ -68,15 +74,36 @@
         <ListView
             android:id="@+id/FileListView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="280dp">
 
         </ListView>
 
-        <Button
-            android:id="@+id/button"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/button3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/button5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/button4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
