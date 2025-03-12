@@ -56,6 +56,7 @@ public class Panorama {
     private SqlLiteOrm sqlLiteORM;
     private AppCompatActivity appCompatActivity;
     private File filePano;
+    private File dirPano;
     private File fileInfo;
     private int webViewId;
     private JSONObject imageInfoJson;
@@ -67,6 +68,7 @@ public class Panorama {
     public void getPhoto(int webViewId, File file,JSONObject vars) {
         this.webViewId = webViewId;
         filePano = file;
+        dirPano = filePano.getParentFile();
         sqlLiteORM = new SqlLiteOrm(appCompatActivity);
         myWebView = (WebView) appCompatActivity.findViewById(webViewId);
         myWebView.clearCache(true);
@@ -99,6 +101,12 @@ public class Panorama {
         String imageInfoJsonStr = readTextFile(fileInfo.getParentFile(), fileInfo.getName());
         try {
             imageInfoJson = new JSONObject(imageInfoJsonStr);
+            JSONObject scenes1 = imageInfoJson.getJSONObject("scenes").getJSONObject("scene1");
+            String panorama = scenes1.getString("panorama");
+            if (panorama.indexOf("/")==-1) {
+                File panoramaFile = new File(filePano.getParentFile(),panorama);
+                imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("panorama", "file://"+panoramaFile.getAbsolutePath());
+            }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +125,7 @@ public class Panorama {
             Log.e(TAG, "getPhoto vars: " + e.toString());
         }
 
-        myWebView.loadUrl("file:///android_asset/pano2.html?img=" + fileInfo.getAbsolutePath() + "&width=" + myWebView.getWidth() + "&height=" + myWebView.getHeight() + "&json_info=" + imageInfoJsonStr + "&path_dir=" + file.getParentFile().getAbsolutePath()+"&from_pitch="+from_pitch+"&from_yaw="+from_yaw);
+        myWebView.loadUrl("file:///android_asset/pano2.html?img=" + fileInfo.getAbsolutePath() + "&width=" + myWebView.getWidth() + "&height=" + myWebView.getHeight() + "&json_info=" + imageInfoJson.toString() + "&path_dir=" + file.getParentFile().getAbsolutePath()+"&from_pitch="+from_pitch+"&from_yaw="+from_yaw);
         StringBuffer sb = new StringBuffer();
         sb.append("javascript: ").append("local_file='").append("file://" + file.getAbsolutePath()).append("';");
         sb.append("path_dir = '" + file.getParentFile().getAbsolutePath() + "';");
@@ -192,6 +200,7 @@ public class Panorama {
             sb.append("mgInnfoJson = JSON.parse(panorama.readInfoJson('" + hotSpot.getString("panorama_url_from") + "'));");
             sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
             sb.append("imgInnfoJson.onClickHotSpot = onClickHotSpot;");
+            sb.append("if (sceneMain?.destroy) { sceneMain.destroy(); }");
             sb.append("sceneMain = pannellum.viewer('panorama', imgInnfoJson);");
             sb.append("sceneMain.setPitch("+hotSpot.getString("pitch")+");");
             sb.append("sceneMain.setYaw("+hotSpot.getString("yaw")+");");
@@ -204,13 +213,22 @@ public class Panorama {
     public void gotoHotSpot(JSONObject hotSpot) {
         if (myWebView == null || hotSpot==null) return;
         try {
+            imageInfoJson = new JSONObject(readTextFile(dirPano.getAbsoluteFile(), hotSpot.getString("panorama_url")));
+            JSONObject scenes1 = imageInfoJson.getJSONObject("scenes").getJSONObject("scene1");
+            String panorama = scenes1.getString("panorama");
+            if (panorama.indexOf("/")==-1) {
+                File panoramaFile = new File(filePano.getParentFile(),panorama);
+                imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("panorama", "file://"+panoramaFile.getAbsolutePath());
+            }
             StringBuffer sb = new StringBuffer();
             sb.append("javascript: ");
-            sb.append("onGotoHotSpot(");
-            sb.append("'").append(hotSpot.getString("panorama_url")).append("'");
-            sb.append(",").append(hotSpot.getString("point_pitch")).append("");
-            sb.append(",").append(hotSpot.getString("point_yaw")).append("");
-            sb.append(");");
+            sb.append("imgInnfoJson = ").append(imageInfoJson.toString()).append(";");
+            sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
+            sb.append("imgInnfoJson.onClickHotSpot = onClickHotSpot;");
+            sb.append("if (sceneMain?.destroy) { sceneMain.destroy(); }");
+            sb.append("sceneMain = pannellum.viewer('panorama', imgInnfoJson);");
+            sb.append("sceneMain.setPitch(").append(hotSpot.getString("point_pitch")).append(");");
+            sb.append("sceneMain.setYaw(").append(hotSpot.getString("point_yaw")).append(");");
             myWebView.loadUrl(sb.toString());
         }catch (Exception e) {
             Log.e(TAG, "Panorama.gotoHotSpot: " + e.toString());
@@ -220,6 +238,7 @@ public class Panorama {
     public void addHotSpot(JSONObject hotSpot) {
         try {
             String panoramaPathJpeg = hotSpot.getString("panorama").replace("\"","");
+            panoramaPathJpeg = panoramaPathJpeg.substring(panoramaPathJpeg.lastIndexOf("/") + 1);
             File infoFilePath = new File(panoramaPathJpeg);
             imageInfoJson = new JSONObject(readTextFile(fileInfo.getParentFile(),fileInfo.getName()));
             JSONObject hotSpotNew = new JSONObject();
@@ -228,7 +247,7 @@ public class Panorama {
             hotSpotNew.put("pitch", new BigDecimal(Double.valueOf(hotSpot.getString("from_pitch"))));
             hotSpotNew.put("point_yaw", new BigDecimal(Double.valueOf(hotSpot.getString("yaw")))); // Куда смотреть после перехода на новую точку
             hotSpotNew.put("point_pitch", new BigDecimal(Double.valueOf(hotSpot.getString("pitch"))));// Куда смотреть после перехода на новую точку
-            hotSpotNew.put("panorama_url", infoFilePath.getAbsolutePath()); // добавить путь к JSON файлу
+            hotSpotNew.put("panorama_url", infoFilePath.getName());
             hotSpotNew.put("type", "scene");
             hotSpotNew.put("text_pint", "");
             hotSpotNew.put("sceneId", "scene_"+new Date().getTime());
@@ -240,6 +259,7 @@ public class Panorama {
         }
     }
 
+
     public void getSaveInfo() {
         if (myWebView==null) return;
         getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+imgInfoPath",(String value)-> {
@@ -249,10 +269,10 @@ public class Panorama {
                 loocAtJson.put("path_dir", valueArr[0]);
                 loocAtJson.put("pitch", valueArr[1]);
                 loocAtJson.put("yaw", valueArr[2]);
-                loocAtJson.put("panorama", valueArr[3]);
+                loocAtJson.put("panorama", valueArr[3].substring(valueArr[3].lastIndexOf("/")+1));
                 String panoramaPathJpeg = loocAtJson.getString("panorama").replace("\"","");
                 File infoFilePath = new File(panoramaPathJpeg);
-                imageInfoJson = new JSONObject(readTextFile(infoFilePath.getParentFile(),infoFilePath.getName()));
+                imageInfoJson = new JSONObject(readTextFile(infoFilePath.getParentFile(), infoFilePath.getName()));
                 imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("pitch",new BigDecimal(Double.valueOf(loocAtJson.getString("pitch"))));
                 imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("yaw",new BigDecimal(Double.valueOf(loocAtJson.getString("yaw"))));
                 createTextFile(infoFilePath.getParentFile(),infoFilePath.getName(),imageInfoJson.toString(4));
@@ -261,20 +281,14 @@ public class Panorama {
                 Log.e(TAG, "Panorama.getSaveInfo: " + e.toString());
             }
         });
-//        StringBuffer sb = new StringBuffer();
-//        sb.append("javascript: ").append("local_file='").append("file://"+filePano.getAbsolutePath()).append("';");
-//        sb.append("imgInnfoJson.scenes.scene1.pitch = sceneMain.getPitch();");
-//        sb.append("imgInnfoJson.scenes.scene1.yaw = sceneMain.getYaw();");
-//        sb.append("panorama.saveInfoJson(imgInfoPath,JSON.stringify(imgInnfoJson));");
-//        sb.append("console.log('imgInnfoJson--'+JSON.stringify(imgInnfoJson));");
-//        myWebView.loadUrl(sb.toString());
     }
+
 
     /**
      * Процедура создания пустого информационного файла JSON
      * @param fileImg - файл изображения, для которого необходимо создать текстовой файл описания в формате JSON
      */
-    private void createEmptyInfoFileJson(File fileImg) {
+    public static void createEmptyInfoFileJson(File fileImg) {
         String fileName = fileImg.getAbsolutePath();
         try {
             String name = fileName.substring(fileName.lastIndexOf("/")+1, fileName.lastIndexOf("."));
@@ -285,7 +299,7 @@ public class Panorama {
             scen.put("sceneFadeDuration", 1000);
             JSONObject scene1 = new JSONObject();
             scene1.put("hotSpots", new JSONArray());
-            scene1.put("panorama", fileName);
+            scene1.put("panorama", fileImg.getName());
             scene1.put("autoLoad", true);
             scene1.put("crossOrigin", "use-credentials");
             scene1.put("lon", 0);
@@ -301,7 +315,7 @@ public class Panorama {
             scen.put("scenes", scene);
             createTextFile(fileImg.getParentFile(),name + ".json", scen.toString(4));
         } catch (JSONException e) {
-            Log.e(TAG, "createEmptyInfoFileJson: " + e.toString());
+            Log.e("Panorama", "createEmptyInfoFileJson: " + e.toString());
         }
     }
 
@@ -311,7 +325,7 @@ public class Panorama {
      * @param fileName - имя создаваемого файла
      * @param content - содержимое, которе помещается в файл
      */
-    private void createTextFile(File directory, String fileName, String content) {
+    private  static void createTextFile(File directory, String fileName, String content) {
         // Создаем директорию, если она не существует
         if (!directory.exists()) {
             directory.mkdirs();
@@ -324,7 +338,7 @@ public class Panorama {
             // Записываем содержимое в файл
             writer.write(content);
         } catch (IOException e) {
-            Log.e(TAG, "createTextFile: " + e.toString());
+            Log.e("Panorama", "createTextFile: " + e.toString());
         }
     }
 

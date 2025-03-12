@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ru.miacomsoft.huawei_meta.view_photo.Panorama;
+
 public class FileBrowser {
     public interface CallbackFileEmptyReturn {
         void call(File file);
@@ -150,7 +152,7 @@ public class FileBrowser {
                         if (fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase().equals("jpg")) {
                             File fileInfoJson = new File(file.getParentFile(), fileName.substring(0,fileName.lastIndexOf("."))+".json");
                             if (!fileInfoJson.exists()) {
-                                createEmptyInfoFileJson(file);
+                                Panorama.createEmptyInfoFileJson(file);
                             }
                             fileList.add(file.getName());
                             fileListAbs.put(file.getName(),file);
@@ -163,41 +165,6 @@ public class FileBrowser {
             sortFileListByDate();
         } else {
             Toast.makeText(appCompatActivity, "Каталог не найден", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * Процедура создания пустого информационного файла JSON
-     * @param fileImg - файл изображения, для которого необходимо создать текстовой файл описания в формате JSON
-     */
-    private void createEmptyInfoFileJson(File fileImg) {
-        String fileName = fileImg.getAbsolutePath();
-        try {
-            String name = fileName.substring(fileName.lastIndexOf("/")+1, fileName.lastIndexOf("."));
-            JSONObject scen = new JSONObject();
-            scen.put("default", new JSONObject("{\"firstScene\": \"scene1\"}"));
-            scen.put("hotSpotDebug", false);
-            scen.put("hotPointDebug", true);
-            scen.put("sceneFadeDuration", 1000);
-            JSONObject scene1 = new JSONObject();
-            scene1.put("hotSpots", new JSONArray());
-            scene1.put("panorama", fileName);
-            scene1.put("autoLoad", true);
-            scene1.put("crossOrigin", "use-credentials");
-            scene1.put("lon", 0);
-            scene1.put("lat", 0);
-            scene1.put("orient_azimuth", 0);
-            scene1.put("orient_roll", 0);
-            scene1.put("orient_pitch", 0);
-            scene1.put("title", "title:" + name);
-            scene1.put("pitch", -3.5001450183561142);
-            scene1.put("yaw", 172.69391364740358);
-            JSONObject scene = new JSONObject();
-            scene.put("scene1", scene1);
-            scen.put("scenes", scene);
-            createTextFile(fileImg.getParentFile(),name + ".json", scen.toString(4));
-        } catch (JSONException e) {
-            Log.e(TAG, "createEmptyInfoFileJson: " + e.toString());
         }
     }
 

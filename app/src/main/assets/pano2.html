@@ -28,15 +28,6 @@
         panorama.selectNewPoint(imgInfoPath, JSON.stringify(hs), null, path_dir,'edit');
     }
 
-    onGotoHotSpot = function(panorama_url, pitch, yaw) {
-        imgInnfoJson = JSON.parse(panorama.readInfoJson(panorama_url));
-        imgInnfoJson.onDblClick = onDblClickScene;
-        imgInnfoJson.onClickHotSpot = onClickHotSpot;
-        sceneMain = pannellum.viewer('panorama', imgInnfoJson);
-        sceneMain.setPitch(pitch);
-        sceneMain.setYaw(yaw);
-    }
-
     let sceneMain={};
     const queryString = document.location.search;
     const params = new URLSearchParams(queryString);

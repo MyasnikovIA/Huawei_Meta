@@ -19,20 +19,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-
 import ru.miacomsoft.huawei_meta.EditPointActivity;
 import ru.miacomsoft.huawei_meta.SelectPointActivity;
 import ru.miacomsoft.huawei_meta.view_photo.Panorama;
 
 
 public class PanoramaJs {
+
     private String TAG = "PanoramaJs";
     private WebView webView;
     private AppCompatActivity parentActivity;
+
     @SuppressLint("NewApi")
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public PanoramaJs(AppCompatActivity activity, WebView webView) {
@@ -92,6 +89,7 @@ public class PanoramaJs {
         }
     }
 
+    private int selectNewPointIndEdit = 0;
     @JavascriptInterface
     public void selectNewPoint(String imgInfoPath, String imgInfojsonStr, String positionNewPoint,String path_dir,String actionType) {
         if (actionType.equals("add")) {
@@ -102,6 +100,11 @@ public class PanoramaJs {
             intent.putExtra("path_dir", path_dir);    // Передаем число
             parentActivity.startActivityForResult(intent, Panorama.REQUEST_CODE);
         } else if (actionType.equals("edit")) {
+            selectNewPointIndEdit += 1;
+            if (selectNewPointIndEdit == 2) {
+                selectNewPointIndEdit = 0;
+                return;
+            }
             Intent intent = new Intent(parentActivity.getApplicationContext(), EditPointActivity.class);
             intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
             intent.putExtra("hsJsonStr", imgInfojsonStr);    // Передаем число
