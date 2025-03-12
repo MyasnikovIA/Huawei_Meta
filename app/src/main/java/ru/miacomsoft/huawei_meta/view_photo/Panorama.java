@@ -1,6 +1,7 @@
 package ru.miacomsoft.huawei_meta.view_photo;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -11,11 +12,13 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -24,13 +27,16 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import ru.miacomsoft.huawei_meta.view_photo.lib.SqlLiteOrm;
@@ -46,6 +52,10 @@ public class Panorama {
     public interface CallbackStringEmptyReturn {
         void call(String value);
     }
+    public interface CallbackEmptyReturn {
+        void call();
+    }
+
 
     private String jsResult = "";
     private CountDownLatch latch;
@@ -60,6 +70,8 @@ public class Panorama {
     private File fileInfo;
     private int webViewId;
     private JSONObject imageInfoJson;
+    private CallbackEmptyReturn callbackAfterDeletePanorama;
+
 
     public Panorama(AppCompatActivity appCompatActivity) {
         this.appCompatActivity = appCompatActivity;
@@ -259,6 +271,95 @@ public class Panorama {
         }
     }
 
+    public void deletePanorama(CallbackEmptyReturn callbackAfterDeletePano) {
+        this.callbackAfterDeletePanorama = callbackAfterDeletePano;
+        if (myWebView==null) return;
+        showConfirmDialog(appCompatActivity, "Подтверждение", "Вы уверены, что хотите выполнить это действие?", new ConfirmDialogListener() {
+            @Override
+            public void onConfirm(boolean isConfirmed) {
+                if (isConfirmed) {
+                    getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+imgInfoPath",(String value)-> {
+                        String[] valueArr = value.split("#");
+                        File panoJson = new File(valueArr[3]);
+                        File panoDirImage = panoJson.getParentFile();
+                        String nameJsonFile = panoJson.getName().substring(panoJson.getName().lastIndexOf("."));
+                        File panoImage = new File(panoDirImage.getParentFile(),nameJsonFile+".jpg");
+                        // Просканировать каталог и последовательно вычитывая файлы описания JSON удалять все ссылки на удаляемую панораму
+                        processJsonFiles(panoDirImage,panoJson.getName().toLowerCase().replaceAll("\"",""));
+                        //Удалить JSON описание панорамы
+                        panoJson.delete();
+                        // Удалить изображение панорамы
+                        panoImage.delete();
+                        if (callbackAfterDeletePanorama!=null) {
+                            callbackAfterDeletePanorama.call();
+                            callbackAfterDeletePanorama = null;
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public  void processJsonFiles(File directory, String targetFileName) {
+        if (!directory.isDirectory()) {
+            System.out.println("Указанный путь не является каталогом.");
+            return;
+        }
+
+        // Получаем список файлов с расширением .json
+        File[] jsonFiles = directory.listFiles((dir, name) -> name.endsWith(".json"));
+        if (jsonFiles == null || jsonFiles.length == 0) {
+            System.out.println("В каталоге нет JSON-файлов.");
+            return;
+        }
+
+        // Обрабатываем каждый JSON-файл
+        for (File jsonFile : jsonFiles) {
+            try {
+                JSONObject jsonObject = new JSONObject(readTextFile(jsonFile.getParentFile(), jsonFile.getName()));
+                // Проверяем и удаляем объекты с targetFileName в panorama_url
+                boolean isModified = removeHotSpotWithPanoramaUrl(jsonObject, targetFileName);
+                // Если файл был изменен, перезаписываем его
+                if (isModified) {
+                    FileWriter fileWriter = new FileWriter(jsonFile);
+                    fileWriter.write(jsonObject.toString(4)); // 4 - отступ для красивого форматирования
+                    fileWriter.flush();
+                    fileWriter.close();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Panorama.processJsonFiles Ошибка при обработке файла: " + e.toString());
+            }
+        }
+    }
+
+    // Метод для удаления объектов с targetFileName в panorama_url
+    private boolean removeHotSpotWithPanoramaUrl(JSONObject jsonObject, String targetFileName) {
+        try {
+            // Получаем массив hotSpots
+            JSONArray hotSpots = jsonObject.getJSONObject("scenes").getJSONObject("scene1").getJSONArray("hotSpots");
+            // Создаем список для хранения индексов элементов, которые нужно удалить
+            List<Integer> indicesToRemove = new ArrayList<>();
+            // Перебираем массив hotSpots
+            for (int i = 0; i < hotSpots.length(); i++) {
+                JSONObject hotSpot = hotSpots.getJSONObject(i);
+                String panoramaUrl = hotSpot.optString("panorama_url", "").toLowerCase();
+                // Если panoramaUrl совпадает с targetFileName, добавляем индекс в список
+                if (panoramaUrl.equals(targetFileName)) {
+                    indicesToRemove.add(i);
+                }
+            }
+            // Удаляем элементы с конца, чтобы не нарушить порядок индексов
+            for (int i = indicesToRemove.size() - 1; i >= 0; i--) {
+                hotSpots.remove(indicesToRemove.get(i));
+            }
+            // Возвращаем true, если были удалены элементы
+            return !indicesToRemove.isEmpty();
+        } catch (Exception e) {
+            Log.e(TAG, "Panorama.removeHotSpotWithPanoramaUrl Ошибка при обработке JSON-структуры.: " + e.toString());
+            return false;
+        }
+    }
+
 
     public void getSaveInfo() {
         if (myWebView==null) return;
@@ -359,5 +460,36 @@ public class Panorama {
             Log.e(TAG, "readTextFile: " + e.toString());
         }
         return content.toString();
+    }
+
+    public interface ConfirmDialogListener {
+        void onConfirm(boolean isConfirmed);
+    }
+
+    public static void showConfirmDialog(Context context, String title, String message, final ConfirmDialogListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+
+        builder.setPositiveButton("Да", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (listener != null) {
+                    listener.onConfirm(true);
+                }
+            }
+        });
+
+        builder.setNegativeButton("Нет", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (listener != null) {
+                    listener.onConfirm(false);
+                }
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

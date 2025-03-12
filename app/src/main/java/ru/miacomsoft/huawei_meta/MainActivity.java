@@ -70,6 +70,12 @@ public class MainActivity extends AppCompatActivity {
         buttonSaveImageInfo.setOnClickListener(v -> {
             panorama.getSaveInfo();
         });
+        final Button buttonDeletePanorama = (Button)findViewById(R.id.buttonDeletePanorama);
+        buttonDeletePanorama.setOnClickListener(v -> {
+            panorama.deletePanorama(()->{
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
+            });
+        });
 
         fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
         fileBrowser.onClick((File file)->{
