@@ -324,11 +324,12 @@ public class Panorama {
                         String tmpPath = panoDirImage.getAbsolutePath()+"/"+input;
                         File panoImageNew = new File(tmpPath+".jpg");
                         File panoJsonNew = new File(tmpPath+".img");
-                        // Изменить имя ссылки на новый файл в других JSON в этом каталоге
-                        renameLinkFiles(panoDirImage,panoJsonNew.getName(),panoJson.getName());
-                        // todo:
-                        //  1) переименовать jpg файл
-                        //  2) переименовать JSON файл
+                        if (panoJson.renameTo(panoJsonNew)) { //  переименовать JSON файл
+                            if (panoImage.renameTo(panoImageNew)) { // переименовать jpg файл
+                                // Изменить имя ссылки на новый файл в других JSON в этом каталоге
+                                renameLinkFiles(panoDirImage,panoJsonNew.getName(),panoJson.getName());
+                            }
+                        }
                         if (callbackAfterRenamePanorama!=null) {
                             callbackAfterRenamePanorama.call();
                             callbackAfterRenamePanorama = null;
