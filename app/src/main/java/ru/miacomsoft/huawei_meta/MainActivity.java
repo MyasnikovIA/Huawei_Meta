@@ -76,6 +76,12 @@ public class MainActivity extends AppCompatActivity {
                 fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
             });
         });
+        final Button buttonRenamePanprama = (Button)findViewById(R.id.buttonRenamePanprama);
+        buttonRenamePanprama.setOnClickListener(v -> {
+            panorama.renamePanorama(()->{
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
+            });
+        });
 
         fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
         fileBrowser.onClick((File file)->{

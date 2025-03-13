@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -280,16 +281,21 @@ public class Panorama {
                 if (isConfirmed) {
                     getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+imgInfoPath",(String value)-> {
                         String[] valueArr = value.split("#");
-                        File panoJson = new File(valueArr[3]);
+                        String imgInfoPathStr = valueArr[3].replaceAll("\"","");
+                        File panoJson = new File(imgInfoPathStr);
                         File panoDirImage = panoJson.getParentFile();
-                        String nameJsonFile = panoJson.getName().substring(panoJson.getName().lastIndexOf("."));
-                        File panoImage = new File(panoDirImage.getParentFile(),nameJsonFile+".jpg");
+                        String nameJsonFile = imgInfoPathStr.substring(imgInfoPathStr.lastIndexOf("/")+1, imgInfoPathStr.lastIndexOf("."));
+                        File panoImage = new File(imgInfoPathStr.substring(0,imgInfoPathStr.lastIndexOf("."))+".jpg");
                         // Просканировать каталог и последовательно вычитывая файлы описания JSON удалять все ссылки на удаляемую панораму
-                        processJsonFiles(panoDirImage,panoJson.getName().toLowerCase().replaceAll("\"",""));
+                        removeLinkFiles(panoDirImage,panoJson.getName().toLowerCase().replaceAll("\"",""));
                         //Удалить JSON описание панорамы
-                        panoJson.delete();
+                        if (panoJson.exists()) {
+                            panoJson.delete();
+                        }
                         // Удалить изображение панорамы
-                        panoImage.delete();
+                        if (panoImage.exists()) {
+                            panoImage.delete();
+                        }
                         if (callbackAfterDeletePanorama!=null) {
                             callbackAfterDeletePanorama.call();
                             callbackAfterDeletePanorama = null;
@@ -300,7 +306,40 @@ public class Panorama {
         });
     }
 
-    public  void processJsonFiles(File directory, String targetFileName) {
+    CallbackEmptyReturn callbackAfterRenamePanorama;
+    public void renamePanorama(CallbackEmptyReturn callbackAfterRenamePano) {
+        if (myWebView==null) return;
+        this.callbackAfterRenamePanorama = callbackAfterRenamePano;
+        getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+imgInfoPath",(String value)-> {
+            String[] valueArr = value.split("#");
+            String imgInfoPathStr = valueArr[3].replaceAll("\"","");
+            File panoJson = new File(imgInfoPathStr);
+            File panoDirImage = panoJson.getParentFile();
+            String nameJsonFile = imgInfoPathStr.substring(imgInfoPathStr.lastIndexOf("/")+1, imgInfoPathStr.lastIndexOf("."));
+            File panoImage = new File(imgInfoPathStr.substring(0,imgInfoPathStr.lastIndexOf("."))+".jpg");
+            showPromptDialog(appCompatActivity, "Переименование панорамы",nameJsonFile, "Введите новое имя:", new PromptDialogListener() {
+                @Override
+                public void onResult(String input) {
+                    if (input != null && !input.isEmpty()) {
+                        String tmpPath = panoDirImage.getAbsolutePath()+"/"+input;
+                        File panoImageNew = new File(tmpPath+".jpg");
+                        File panoJsonNew = new File(tmpPath+".img");
+                        // Изменить имя ссылки на новый файл в других JSON в этом каталоге
+                        renameLinkFiles(panoDirImage,panoJsonNew.getName(),panoJson.getName());
+                        // todo:
+                        //  1) переименовать jpg файл
+                        //  2) переименовать JSON файл
+                        if (callbackAfterRenamePanorama!=null) {
+                            callbackAfterRenamePanorama.call();
+                            callbackAfterRenamePanorama = null;
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    public  void removeLinkFiles(File directory, String targetFileName) {
         if (!directory.isDirectory()) {
             System.out.println("Указанный путь не является каталогом.");
             return;
@@ -332,6 +371,69 @@ public class Panorama {
         }
     }
 
+    public void renameLinkFiles(File directory, String targetFileName, String newFileName) {
+        if (!directory.isDirectory()) {
+            System.out.println("Указанный путь не является каталогом.");
+            return;
+        }
+
+        // Получаем список файлов с расширением .json
+        File[] jsonFiles = directory.listFiles((dir, name) -> name.endsWith(".json"));
+        if (jsonFiles == null || jsonFiles.length == 0) {
+            System.out.println("В каталоге нет JSON-файлов.");
+            return;
+        }
+        for (File jsonFile : jsonFiles) {
+            try {
+                JSONObject jsonObject = new JSONObject(readTextFile(jsonFile.getParentFile(), jsonFile.getName()));
+                boolean isModified = renameHotSpotWithPanoramaUrl(jsonObject, targetFileName, newFileName);
+                if (isModified) {
+                    FileWriter fileWriter = new FileWriter(jsonFile);
+                    fileWriter.write(jsonObject.toString(4)); // 4 - отступ для красивого форматирования
+                    fileWriter.flush();
+                    fileWriter.close();
+                    System.out.println("Файл изменен и перезаписан: " + jsonFile.getName());
+                } else {
+                    System.out.println("Файл не изменен: " + jsonFile.getName());
+                }
+            } catch (Exception e) {
+                System.out.println("Ошибка при обработке файла: " + jsonFile.getName());
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    // Метод для переименования panorama_url
+    private boolean renameHotSpotWithPanoramaUrl(JSONObject jsonObject, String targetFileName, String newFileName) {
+        try {
+            // Получаем массив hotSpots
+            JSONArray hotSpots = jsonObject.getJSONObject("scenes")
+                    .getJSONObject("scene1")
+                    .getJSONArray("hotSpots");
+
+            boolean isModified = false;
+
+            // Перебираем массив hotSpots
+            for (int i = 0; i < hotSpots.length(); i++) {
+                JSONObject hotSpot = hotSpots.getJSONObject(i);
+                String panoramaUrl = hotSpot.optString("panorama_url", "");
+
+                // Если panoramaUrl совпадает с targetFileName, переименовываем
+                if (panoramaUrl.equals(targetFileName)) {
+                    hotSpot.put("panorama_url", newFileName);
+                    isModified = true; // Файл был изменен
+                }
+            }
+
+            // Возвращаем true, если были изменены элементы
+            return isModified;
+        } catch (Exception e) {
+            System.out.println("Ошибка при обработке JSON-структуры.");
+            e.printStackTrace();
+            return false;
+        }
+    }
     // Метод для удаления объектов с targetFileName в panorama_url
     private boolean removeHotSpotWithPanoramaUrl(JSONObject jsonObject, String targetFileName) {
         try {
@@ -489,6 +591,45 @@ public class Panorama {
             }
         });
 
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public interface PromptDialogListener {
+        void onResult(String input);
+    }
+
+
+    public static void showPromptDialog(Context context, String title,String text, String message, final PromptDialogListener listener) {
+        // Создаем EditText для ввода текста
+        final EditText input = new EditText(context);
+        input.setHint("Новое имя файла");
+        input.setText(text);
+        // Создаем AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setView(input); // Добавляем EditText в диалог
+        // Кнопка "ОК"
+        builder.setPositiveButton("ОК", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String userInput = input.getText().toString();
+                if (listener != null) {
+                    listener.onResult(userInput); // Передаем введенный текст в listener
+                }
+            }
+        });
+
+        // Кнопка "Отмена"
+        builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel(); // Закрываем диалог
+            }
+        });
+
+        // Показываем диалог
         AlertDialog dialog = builder.create();
         dialog.show();
     }
