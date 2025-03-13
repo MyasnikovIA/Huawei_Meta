@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         buttonStartHuawei.setOnClickListener(v -> {
             runExternalApp.run("com.huawei.cvIntl60");
         });
-        final Button buttonSaveImageInfo = (Button)findViewById(R.id.buttonGotoHotSpot);
+        final Button buttonSaveImageInfo = (Button)findViewById(R.id.buttonSaveImageInfo);
         buttonSaveImageInfo.setOnClickListener(v -> {
             panorama.getSaveInfo();
         });

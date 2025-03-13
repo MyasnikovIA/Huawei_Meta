@@ -26,7 +26,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/buttonGotoHotSpot"
+                android:id="@+id/buttonSaveImageInfo"
                 android:layout_width="350dp"
                 android:layout_height="wrap_content"
                 android:text="Select pano"

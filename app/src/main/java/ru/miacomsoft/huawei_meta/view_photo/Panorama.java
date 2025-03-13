@@ -372,98 +372,6 @@ public class Panorama {
         }
     }
 
-    public void renameLinkFiles(File directory, String targetFileName, String newFileName) {
-        if (!directory.isDirectory()) {
-            System.out.println("Указанный путь не является каталогом.");
-            return;
-        }
-
-        // Получаем список файлов с расширением .json
-        File[] jsonFiles = directory.listFiles((dir, name) -> name.endsWith(".json"));
-        if (jsonFiles == null || jsonFiles.length == 0) {
-            System.out.println("В каталоге нет JSON-файлов.");
-            return;
-        }
-        for (File jsonFile : jsonFiles) {
-            try {
-                JSONObject jsonObject = new JSONObject(readTextFile(jsonFile.getParentFile(), jsonFile.getName()));
-                boolean isModified = renameHotSpotWithPanoramaUrl(jsonObject, targetFileName, newFileName);
-                if (isModified) {
-                    FileWriter fileWriter = new FileWriter(jsonFile);
-                    fileWriter.write(jsonObject.toString(4)); // 4 - отступ для красивого форматирования
-                    fileWriter.flush();
-                    fileWriter.close();
-                    System.out.println("Файл изменен и перезаписан: " + jsonFile.getName());
-                } else {
-                    System.out.println("Файл не изменен: " + jsonFile.getName());
-                }
-            } catch (Exception e) {
-                System.out.println("Ошибка при обработке файла: " + jsonFile.getName());
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    // Метод для переименования panorama_url
-    private boolean renameHotSpotWithPanoramaUrl(JSONObject jsonObject, String targetFileName, String newFileName) {
-        try {
-            // Получаем массив hotSpots
-            JSONArray hotSpots = jsonObject.getJSONObject("scenes")
-                    .getJSONObject("scene1")
-                    .getJSONArray("hotSpots");
-
-            boolean isModified = false;
-
-            // Перебираем массив hotSpots
-            for (int i = 0; i < hotSpots.length(); i++) {
-                JSONObject hotSpot = hotSpots.getJSONObject(i);
-                String panoramaUrl = hotSpot.optString("panorama_url", "");
-
-                // Если panoramaUrl совпадает с targetFileName, переименовываем
-                if (panoramaUrl.equals(targetFileName)) {
-                    hotSpot.put("panorama_url", newFileName);
-                    isModified = true; // Файл был изменен
-                }
-            }
-
-            // Возвращаем true, если были изменены элементы
-            return isModified;
-        } catch (Exception e) {
-            System.out.println("Ошибка при обработке JSON-структуры.");
-            e.printStackTrace();
-            return false;
-        }
-    }
-    // Метод для удаления объектов с targetFileName в panorama_url
-    private boolean removeHotSpotWithPanoramaUrl(JSONObject jsonObject, String targetFileName) {
-        try {
-            // Получаем массив hotSpots
-            JSONArray hotSpots = jsonObject.getJSONObject("scenes").getJSONObject("scene1").getJSONArray("hotSpots");
-            // Создаем список для хранения индексов элементов, которые нужно удалить
-            List<Integer> indicesToRemove = new ArrayList<>();
-            // Перебираем массив hotSpots
-            for (int i = 0; i < hotSpots.length(); i++) {
-                JSONObject hotSpot = hotSpots.getJSONObject(i);
-                String panoramaUrl = hotSpot.optString("panorama_url", "").toLowerCase();
-                // Если panoramaUrl совпадает с targetFileName, добавляем индекс в список
-                if (panoramaUrl.equals(targetFileName)) {
-                    indicesToRemove.add(i);
-                }
-            }
-            // Удаляем элементы с конца, чтобы не нарушить порядок индексов
-            for (int i = indicesToRemove.size() - 1; i >= 0; i--) {
-                hotSpots.remove(indicesToRemove.get(i));
-            }
-            // Возвращаем true, если были удалены элементы
-            return !indicesToRemove.isEmpty();
-        } catch (Exception e) {
-            Log.e(TAG, "Panorama.removeHotSpotWithPanoramaUrl Ошибка при обработке JSON-структуры.: " + e.toString());
-            return false;
-        }
-    }
-
-
     public void getSaveInfo() {
         if (myWebView==null) return;
         getVar("window.path_dir+'#'+sceneMain.getPitch()+'#'+sceneMain.getYaw()+'#'+imgInfoPath",(String value)-> {
@@ -474,8 +382,8 @@ public class Panorama {
                 loocAtJson.put("pitch", valueArr[1]);
                 loocAtJson.put("yaw", valueArr[2]);
                 loocAtJson.put("panorama", valueArr[3].substring(valueArr[3].lastIndexOf("/")+1));
-                String panoramaPathJpeg = loocAtJson.getString("panorama").replace("\"","");
-                File infoFilePath = new File(panoramaPathJpeg);
+                String panoramaPathJson =  loocAtJson.getString("path_dir").replace("\"","") + "/" + loocAtJson.getString("panorama").replace("\"","");
+                File infoFilePath = new File(panoramaPathJson);
                 imageInfoJson = new JSONObject(readTextFile(infoFilePath.getParentFile(), infoFilePath.getName()));
                 imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("pitch",new BigDecimal(Double.valueOf(loocAtJson.getString("pitch"))));
                 imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("yaw",new BigDecimal(Double.valueOf(loocAtJson.getString("yaw"))));
@@ -634,4 +542,96 @@ public class Panorama {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    public void renameLinkFiles(File directory, String targetFileName, String newFileName) {
+        if (!directory.isDirectory()) {
+            System.out.println("Указанный путь не является каталогом.");
+            return;
+        }
+
+        // Получаем список файлов с расширением .json
+        File[] jsonFiles = directory.listFiles((dir, name) -> name.endsWith(".json"));
+        if (jsonFiles == null || jsonFiles.length == 0) {
+            System.out.println("В каталоге нет JSON-файлов.");
+            return;
+        }
+        for (File jsonFile : jsonFiles) {
+            try {
+                JSONObject jsonObject = new JSONObject(readTextFile(jsonFile.getParentFile(), jsonFile.getName()));
+                boolean isModified = renameHotSpotWithPanoramaUrl(jsonObject, targetFileName, newFileName);
+                if (isModified) {
+                    FileWriter fileWriter = new FileWriter(jsonFile);
+                    fileWriter.write(jsonObject.toString(4)); // 4 - отступ для красивого форматирования
+                    fileWriter.flush();
+                    fileWriter.close();
+                    System.out.println("Файл изменен и перезаписан: " + jsonFile.getName());
+                } else {
+                    System.out.println("Файл не изменен: " + jsonFile.getName());
+                }
+            } catch (Exception e) {
+                System.out.println("Ошибка при обработке файла: " + jsonFile.getName());
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    // Метод для переименования panorama_url
+    private boolean renameHotSpotWithPanoramaUrl(JSONObject jsonObject, String targetFileName, String newFileName) {
+        try {
+            // Получаем массив hotSpots
+            JSONArray hotSpots = jsonObject.getJSONObject("scenes")
+                    .getJSONObject("scene1")
+                    .getJSONArray("hotSpots");
+
+            boolean isModified = false;
+
+            // Перебираем массив hotSpots
+            for (int i = 0; i < hotSpots.length(); i++) {
+                JSONObject hotSpot = hotSpots.getJSONObject(i);
+                String panoramaUrl = hotSpot.optString("panorama_url", "");
+
+                // Если panoramaUrl совпадает с targetFileName, переименовываем
+                if (panoramaUrl.equals(targetFileName)) {
+                    hotSpot.put("panorama_url", newFileName);
+                    isModified = true; // Файл был изменен
+                }
+            }
+
+            // Возвращаем true, если были изменены элементы
+            return isModified;
+        } catch (Exception e) {
+            System.out.println("Ошибка при обработке JSON-структуры.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    // Метод для удаления объектов с targetFileName в panorama_url
+    private boolean removeHotSpotWithPanoramaUrl(JSONObject jsonObject, String targetFileName) {
+        try {
+            // Получаем массив hotSpots
+            JSONArray hotSpots = jsonObject.getJSONObject("scenes").getJSONObject("scene1").getJSONArray("hotSpots");
+            // Создаем список для хранения индексов элементов, которые нужно удалить
+            List<Integer> indicesToRemove = new ArrayList<>();
+            // Перебираем массив hotSpots
+            for (int i = 0; i < hotSpots.length(); i++) {
+                JSONObject hotSpot = hotSpots.getJSONObject(i);
+                String panoramaUrl = hotSpot.optString("panorama_url", "").toLowerCase();
+                // Если panoramaUrl совпадает с targetFileName, добавляем индекс в список
+                if (panoramaUrl.equals(targetFileName)) {
+                    indicesToRemove.add(i);
+                }
+            }
+            // Удаляем элементы с конца, чтобы не нарушить порядок индексов
+            for (int i = indicesToRemove.size() - 1; i >= 0; i--) {
+                hotSpots.remove(indicesToRemove.get(i));
+            }
+            // Возвращаем true, если были удалены элементы
+            return !indicesToRemove.isEmpty();
+        } catch (Exception e) {
+            Log.e(TAG, "Panorama.removeHotSpotWithPanoramaUrl Ошибка при обработке JSON-структуры.: " + e.toString());
+            return false;
+        }
+    }
+
 }

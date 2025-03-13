@@ -11,8 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-
 import ru.miacomsoft.huawei_meta.view_photo.Panorama;
 
 public class EditPointActivity extends AppCompatActivity {
@@ -37,7 +35,7 @@ public class EditPointActivity extends AppCompatActivity {
             Log.e(TAG, "createEmptyInfoFileJson: " + e.toString());
         }
 
-        Button buttonReturn = findViewById(R.id.buttonGotoHotSpot);
+        Button buttonReturn = findViewById(R.id.buttonSaveImageInfo);
         buttonReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

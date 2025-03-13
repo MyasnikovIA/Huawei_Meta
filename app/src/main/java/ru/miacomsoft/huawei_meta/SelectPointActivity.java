@@ -39,7 +39,7 @@ public class SelectPointActivity extends AppCompatActivity {
         }
         fileBrowser = new FileBrowser(this);
         panorama = new Panorama(this);
-        Button buttonReturn = findViewById(R.id.buttonGotoHotSpot);
+        Button buttonReturn = findViewById(R.id.buttonSaveImageInfo);
         buttonReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

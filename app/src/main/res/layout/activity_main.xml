@@ -32,7 +32,7 @@
                 android:text="Cam" />
 
             <Button
-                android:id="@+id/buttonGotoHotSpot"
+                android:id="@+id/buttonSaveImageInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Save"
