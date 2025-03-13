@@ -62,28 +62,45 @@ public class MainActivity extends AppCompatActivity {
     private void onStartApp() {
         PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
         startservice();
-        final Button buttonStartHuawei = (Button)findViewById(R.id.buttonStartHuawei);
+        final Button buttonStartHuawei = (Button)findViewById(R.id.buttonSelectPoint);
         buttonStartHuawei.setOnClickListener(v -> {
             runExternalApp.run("com.huawei.cvIntl60");
         });
-        final Button buttonSaveImageInfo = (Button)findViewById(R.id.buttonSaveImageInfo);
+        final Button buttonSaveImageInfo = (Button)findViewById(R.id.buttonDeletePoint);
         buttonSaveImageInfo.setOnClickListener(v -> {
             panorama.getSaveInfo();
         });
         final Button buttonDeletePanorama = (Button)findViewById(R.id.buttonDeletePanorama);
         buttonDeletePanorama.setOnClickListener(v -> {
             panorama.deletePanorama(()->{
-                fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR);
             });
         });
         final Button buttonRenamePanprama = (Button)findViewById(R.id.buttonRenamePanprama);
         buttonRenamePanprama.setOnClickListener(v -> {
             panorama.renamePanorama(()->{
-                fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR);
             });
         });
 
-        fileBrowser.getFileList(R.id.FileListView,R.id.editTextFilter,PATH_DIR);
+        final Button buttonMap = (Button)findViewById(R.id.buttonCancelSelectMapPoint);
+        buttonMap.setOnClickListener(v -> {
+            if (panorama.getFilePano() !=null) {
+                // Запуск окна привязки панорамной фото к карте
+                Intent intent = new Intent(this, MapView.class);
+                intent.putExtra("filePano", panorama.getFilePano().getAbsolutePath()); // Передаем путь к Jpg файлу панорамы
+                startActivity(intent);
+            }
+        });
+
+        final Button buttonSetupApp = (Button)findViewById(R.id.buttonSetupApp);
+        buttonSetupApp.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SetupApp.class);
+            startActivityForResult(intent, SetupApp.REQUEST_CODE_SETUP_APP);
+        });
+
+
+        fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR);
         fileBrowser.onClick((File file)->{
             panorama.getPhoto(R.id.webView,file,new JSONObject());
         });
@@ -158,7 +175,12 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "createEmptyInfoFileJson: " + e.toString());
                 }
             }
+        } else if (requestCode == SetupApp.REQUEST_CODE_SETUP_APP && resultCode == RESULT_OK && data != null) {
+            // после изменений настроек перезапускаем приложение снова
+            onStartApp();
         }
+
+
     }
 
 

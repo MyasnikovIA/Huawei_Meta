@@ -79,6 +79,10 @@ public class Panorama {
         this.appCompatActivity = appCompatActivity;
     }
 
+    public File getFilePano() {
+        return filePano;
+    }
+
     public void getPhoto(int webViewId, File file,JSONObject vars) {
         this.webViewId = webViewId;
         filePano = file;

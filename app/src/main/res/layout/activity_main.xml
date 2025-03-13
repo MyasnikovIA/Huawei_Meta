@@ -26,20 +26,20 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/buttonStartHuawei"
+                android:id="@+id/buttonSelectPoint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Cam" />
 
             <Button
-                android:id="@+id/buttonSaveImageInfo"
+                android:id="@+id/buttonDeletePoint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Save"
                 android:textStyle="normal|bold|italic" />
 
             <Button
-                android:id="@+id/buttonMap"
+                android:id="@+id/buttonCancelSelectMapPoint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Map" />
@@ -63,7 +63,7 @@
             android:orientation="horizontal">
 
             <EditText
-                android:id="@+id/editTextFilter"
+                android:id="@+id/editTextSearch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -87,7 +87,8 @@
                 android:id="@+id/buttonRenamePanprama"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="name" />
+                android:text="ReName"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/button3"
@@ -100,9 +101,10 @@
                 android:layout_height="wrap_content" />
 
             <Button
-                android:id="@+id/button4"
+                android:id="@+id/buttonSetupApp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="Setup" />
         </LinearLayout>
 
     </LinearLayout>

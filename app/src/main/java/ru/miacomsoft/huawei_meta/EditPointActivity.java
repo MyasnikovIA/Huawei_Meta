@@ -35,7 +35,7 @@ public class EditPointActivity extends AppCompatActivity {
             Log.e(TAG, "createEmptyInfoFileJson: " + e.toString());
         }
 
-        Button buttonReturn = findViewById(R.id.buttonSaveImageInfo);
+        Button buttonReturn = findViewById(R.id.buttonDeletePoint);
         buttonReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
