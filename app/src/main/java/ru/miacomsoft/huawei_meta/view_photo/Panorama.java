@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import ru.miacomsoft.huawei_meta.R;
 import ru.miacomsoft.huawei_meta.view_photo.lib.SqlLiteOrm;
 import ru.miacomsoft.huawei_meta.view_photo.libjs.Android;
 import ru.miacomsoft.huawei_meta.view_photo.libjs.Console;
@@ -323,11 +324,21 @@ public class Panorama {
                     if (input != null && !input.isEmpty()) {
                         String tmpPath = panoDirImage.getAbsolutePath()+"/"+input;
                         File panoImageNew = new File(tmpPath+".jpg");
-                        File panoJsonNew = new File(tmpPath+".img");
+                        File panoJsonNew = new File(tmpPath+".json");
                         if (panoJson.renameTo(panoJsonNew)) { //  переименовать JSON файл
                             if (panoImage.renameTo(panoImageNew)) { // переименовать jpg файл
                                 // Изменить имя ссылки на новый файл в других JSON в этом каталоге
                                 renameLinkFiles(panoDirImage,panoJsonNew.getName(),panoJson.getName());
+                                try {
+                                    // Изменить ссылку на изображение панорамы в panoJsonNew scenes.scene1.panorama
+                                    imageInfoJson = new JSONObject(readTextFile(panoJsonNew.getParentFile(), panoJsonNew.getName()));
+                                    imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("panorama", panoImageNew.getName().substring(0,panoImageNew.getName().lastIndexOf("."))+".jpg");
+                                    imageInfoJson.getJSONObject("scenes").getJSONObject("scene1").put("title", "title:"+panoImageNew.getName().substring(0,panoImageNew.getName().lastIndexOf(".")));
+                                    createTextFile(panoJsonNew.getParentFile(), panoJsonNew.getName(), imageInfoJson.toString(4));
+                                    getPhoto(R.id.webView,panoImageNew,new JSONObject());
+                                } catch (Exception e){
+                                    Log.e(TAG, "Panorama.renamePanorama: " + e.toString());
+                                }
                             }
                         }
                         if (callbackAfterRenamePanorama!=null) {
