@@ -13,6 +13,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,7 +61,25 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void onStartApp() {
-        PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
+        JSONObject config = SetupApp.getConfigJSON(this);
+        if (config==null) {
+            // если нет файла настройки, тогда открываем окно для конфигурирования приложения
+            Intent intent = new Intent(this, SetupApp.class);
+            startActivityForResult(intent, SetupApp.REQUEST_CODE_SETUP_APP);
+            return;
+        }
+        //PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
+
+        try {
+            if (config.has("PATH_DIR")) {
+                PATH_DIR= config.getString("PATH_DIR");
+            } else {
+                PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
         startservice();
         final Button buttonStartHuawei = (Button)findViewById(R.id.buttonSelectPoint);
         buttonStartHuawei.setOnClickListener(v -> {
