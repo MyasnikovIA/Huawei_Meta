@@ -130,10 +130,6 @@ public class OsmMap {
             URL url = new URL(fileUrl);
             HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-           // connection.setRequestProperty(":authority:","b.tile.openstreetmap.org");
-           // connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-           // connection.setRequestProperty("status", "-268435456");
-
             connection.setRequestProperty("sec-ch-ua-platform", "Android");
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14; Infinix X6833B Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/133.0.6943.137 Mobile Safari/537.36");
             connection.setRequestProperty("sec-ch-ua", "\"Not(A:Brand\";v=\"99\", \"Android WebView\";v=\"133\", \"Chromium\";v=\"133\"");

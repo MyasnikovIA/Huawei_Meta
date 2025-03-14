@@ -1,70 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <LinearLayout
-        android:layout_width="409dp"
+    <ScrollView
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="1dp">
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        android:layout_weight="1">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/buttonDeletePoint"
-                android:layout_width="350dp"
-                android:layout_height="wrap_content"
-                android:text="Select pano"
-                android:textStyle="normal|bold|italic" />
-
-        </LinearLayout>
-
-        <WebView
-            android:id="@+id/webView"
-            android:layout_width="350dp"
-            android:layout_height="300dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/editTextSearch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="text" />
-
-        </LinearLayout>
-
-        <ListView
-            android:id="@+id/FileListView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </ListView>
-
-        <Button
-            android:id="@+id/button"
+            android:id="@+id/layoutContainerSetup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Button" />
-    </LinearLayout>
+            android:orientation="vertical" />
+    </ScrollView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save" />
+</LinearLayout>
