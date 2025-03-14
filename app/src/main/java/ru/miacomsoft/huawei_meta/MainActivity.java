@@ -28,10 +28,12 @@ public class MainActivity extends AppCompatActivity {
     private PermissionGPS permissionGPS;
     private RunExternalApp runExternalApp;
     private String PATH_DIR;
+    private String PATH_DIR_PROJECT;
     private Intent serviceIntent;
     private FileBrowser fileBrowser;
     private Panorama panorama;
     private String TAG = "MainActivity";
+    private boolean isRunService = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,19 +70,36 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, SetupApp.REQUEST_CODE_SETUP_APP);
             return;
         }
-        //PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
-
         try {
-            if (config.has("PATH_DIR")) {
-                PATH_DIR= config.getString("PATH_DIR");
+            Log.d("config",config.toString(4));
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        //PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
+        try {
+            if (config.has("observer")) {
+                PATH_DIR= config.getString("observer");
             } else {
-                PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
+                PATH_DIR = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
+            }
+            if (config.has("projectDir")) {
+                PATH_DIR_PROJECT= config.getString("projectDir");
+            } else {
+                PATH_DIR_PROJECT = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
+            }
+            if (config.has("isRunService")) {
+                isRunService = config.getBoolean("isRunService");
+            } else {
+                isRunService = false;
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
 
-        startservice();
+        if (isRunService) {
+            startservice();
+        }
+
         final Button buttonStartHuawei = (Button)findViewById(R.id.buttonSelectPoint);
         buttonStartHuawei.setOnClickListener(v -> {
             runExternalApp.run("com.huawei.cvIntl60");
@@ -92,13 +111,13 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonDeletePanorama = (Button)findViewById(R.id.buttonDeletePanorama);
         buttonDeletePanorama.setOnClickListener(v -> {
             panorama.deletePanorama(()->{
-                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR);
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT);
             });
         });
         final Button buttonRenamePanprama = (Button)findViewById(R.id.buttonRenamePanprama);
         buttonRenamePanprama.setOnClickListener(v -> {
             panorama.renamePanorama(()->{
-                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR);
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT);
             });
         });
 
@@ -119,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR);
+        fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT);
         fileBrowser.onClick((File file)->{
             panorama.getPhoto(R.id.webView,file,new JSONObject());
         });
@@ -130,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         if (!isServiceRunning(FileObserverService.class)) {
             serviceIntent = new Intent(this, FileObserverService.class);
             serviceIntent.putExtra("PATH_DIR", PATH_DIR);
+            serviceIntent.putExtra("PATH_DIR_PROJECT", PATH_DIR_PROJECT);
             startService(serviceIntent);
             Toast.makeText(this, "Сервис запущен ", Toast.LENGTH_LONG).show();
         }
@@ -195,7 +215,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } else if (requestCode == SetupApp.REQUEST_CODE_SETUP_APP && resultCode == RESULT_OK && data != null) {
-            // после изменений настроек перезапускаем приложение снова
             onStartApp();
         }
 

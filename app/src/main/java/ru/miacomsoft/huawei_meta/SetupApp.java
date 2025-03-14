@@ -3,6 +3,7 @@ package ru.miacomsoft.huawei_meta;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -42,7 +43,7 @@ public class SetupApp extends AppCompatActivity {
 
     private Spinner storeSpinner;
     private JSONArray storeArray;
-
+    private static String fileNameSetup = "setup.json";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,16 +54,11 @@ public class SetupApp extends AppCompatActivity {
 
         layoutContainer = findViewById(R.id.layoutContainerSetup);
         btnSave = findViewById(R.id.btnSave);
-
-        // Инициализация JSON
         initializeJSON();
-
-        // Генерация UI
         generateUIFromJSON();
-
-        // Сохранение JSON
         btnSave.setOnClickListener(v -> saveJSONToFile());
     }
+
 
     private void initializeJSON() {
         File file = new File(getCacheDir(), "setup.json");
@@ -88,38 +84,44 @@ public class SetupApp extends AppCompatActivity {
     private JSONObject createDefaultJSON() {
         JSONObject defaultJSON = new JSONObject();
         try {
-            JSONObject nameProperty = new JSONObject();
-            nameProperty.put("value", "John Doe");
-            nameProperty.put("type", "string");
-            defaultJSON.put("name", nameProperty);
+            JSONObject observerProperty = new JSONObject();
+            observerProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/CV60");
+            observerProperty.put("type", "string");
+            observerProperty.put("text", "Отслеживания");
+            defaultJSON.put("observer", observerProperty);
 
-            JSONObject ageProperty = new JSONObject();
-            ageProperty.put("value", 30);
-            ageProperty.put("type", "number");
-            defaultJSON.put("age", ageProperty);
+            JSONObject isRunServiceProperty = new JSONObject();
+            isRunServiceProperty.put("value", true);
+            isRunServiceProperty.put("type", "boolean");
+            isRunServiceProperty.put("text", "Запустиь сервис при старте приложения");
+            defaultJSON.put("isRunService", isRunServiceProperty);
 
-            JSONObject isStudentProperty = new JSONObject();
-            isStudentProperty.put("value", false);
-            isStudentProperty.put("type", "boolean");
-            defaultJSON.put("isStudent", isStudentProperty);
+            JSONObject projectProperty = new JSONObject();
+            projectProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/HUAWEI_META");
+            projectProperty.put("type", "string");
+            projectProperty.put("text", "Проекта");
+            defaultJSON.put("projectDir", projectProperty);
 
-            JSONObject comboBoxJSON_1 = new JSONObject();
-            comboBoxJSON_1.put("name", "Store1");
-            comboBoxJSON_1.put("value", "/store/0/ssd");
-            comboBoxJSON_1.put("type", "string");
-            comboBoxJSON_1.put("isSeletedRow", true);
+//            выпадающий список combobox
+//            JSONObject comboBoxJSON_1 = new JSONObject();
+//            comboBoxJSON_1.put("name", "Store1");
+//            comboBoxJSON_1.put("value", "/store/0/ssd");
+//            comboBoxJSON_1.put("type", "string");
+//            comboBoxJSON_1.put("text", "Внешний носитель информации");
+//            comboBoxJSON_1.put("isSeletedRow", true);
+//
+//            JSONObject comboBoxJSON_2 = new JSONObject();
+//            comboBoxJSON_2.put("name", "Store2");
+//            comboBoxJSON_2.put("value", "/store/0/ssd_local2");
+//            comboBoxJSON_2.put("type", "string");
+//            comboBoxJSON_2.put("text", "Внутренний носитель информации");
+//            comboBoxJSON_2.put("isSeletedRow", false);
+//
+//            JSONArray storeArray = new JSONArray();
+//            storeArray.put(comboBoxJSON_1);
+//            storeArray.put(comboBoxJSON_2);
+//            defaultJSON.put("Select_store", storeArray);
 
-            JSONObject comboBoxJSON_2 = new JSONObject();
-            comboBoxJSON_2.put("name", "Store2");
-            comboBoxJSON_2.put("value", "/store/0/ssd_local2");
-            comboBoxJSON_2.put("type", "string");
-            comboBoxJSON_2.put("isSeletedRow", false);
-
-            JSONArray storeArray = new JSONArray();
-            storeArray.put(comboBoxJSON_1);
-            storeArray.put(comboBoxJSON_2);
-
-            defaultJSON.put("Select store", storeArray);
         } catch (JSONException e) {
             Log.e("JSONError", "Error creating default JSON", e);
         }
@@ -136,17 +138,19 @@ public class SetupApp extends AppCompatActivity {
 
                 // Создаем горизонтальный LinearLayout для каждой строки атрибута
                 LinearLayout rowLayout = new LinearLayout(this);
-                rowLayout.setOrientation(LinearLayout.HORIZONTAL);
-                rowLayout.setLayoutParams(new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT));
+                //rowLayout.setOrientation(LinearLayout.HORIZONTAL);
+                rowLayout.setOrientation(LinearLayout.VERTICAL);
+                rowLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
 
-                // TextView для имени атрибута
+                // TextView для текста атрибута (поле "text")
                 TextView textViewKey = new TextView(this);
-                textViewKey.setText(key + ": ");
-                textViewKey.setLayoutParams(new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT));
+                String valStr = getTextForAttribute(value);
+                if (valStr.length()>0) {
+                    textViewKey.setText(valStr + ": ");
+                } else {
+                    textViewKey.setText("");
+                }
+                textViewKey.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                 rowLayout.addView(textViewKey);
 
                 // Генерация UI для значения в зависимости от типа
@@ -159,6 +163,7 @@ public class SetupApp extends AppCompatActivity {
                             addEditableField(rowLayout, key, property);
                             break;
                         case "boolean":
+                            rowLayout.setOrientation(LinearLayout.HORIZONTAL);
                             addCheckBox(rowLayout, key, property);
                             break;
                     }
@@ -175,6 +180,20 @@ public class SetupApp extends AppCompatActivity {
         } catch (JSONException e) {
             Log.e("JSONError", "Error generating UI from JSON", e);
         }
+    }
+
+    private String getTextForAttribute(Object value) {
+        try {
+            if (value instanceof JSONObject) {
+                JSONObject property = (JSONObject) value;
+                if (property.has("text")) {
+                    return property.getString("text");
+                }
+            }
+        } catch (JSONException e) {
+            Log.e("JSONError", "Error getting text for attribute", e);
+        }
+        return "";
     }
 
     private void addEditableField(LinearLayout rowLayout, String key, JSONObject property) {
@@ -223,7 +242,7 @@ public class SetupApp extends AppCompatActivity {
         try {
             for (int i = 0; i < storeArray.length(); i++) {
                 JSONObject store = storeArray.getJSONObject(i);
-                storeNames.add(store.getString("name"));
+                storeNames.add(store.getString("text")); // Используем поле "text"
                 if (store.getBoolean("isSeletedRow")) {
                     selectedPosition = i;
                 }
@@ -258,7 +277,7 @@ public class SetupApp extends AppCompatActivity {
 
     private void openEditDialog(String key, JSONObject property) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Edit " + key);
+        builder.setTitle("Edit " + getTextForAttribute(property));
 
         final EditText input = new EditText(this);
         try {
@@ -304,24 +323,24 @@ public class SetupApp extends AppCompatActivity {
     private void saveJSONToFile() {
         try {
             // Сохраняем JSON в файл
-            File file = new File(getCacheDir(), "setup.json");
+            File file = new File(getCacheDir(), fileNameSetup);
             JSONHelper.saveJSONToFile(jsonObject, file);
             Intent resultIntent = new Intent();
             resultIntent.putExtra("ACTION","RELOAD_APP");
             setResult(RESULT_OK, resultIntent);
             finish();
         } catch (IOException e) {
-            Log.e("JSONError", "Error saving JSON", e);
+            Log.e("SetupApp", "saveJSONToFile: Error saving JSON", e);
         }
     }
 
     public static JSONObject getConfigJSON(AppCompatActivity appCompatActivity) {
         JSONObject flatJSON = new JSONObject();
         try {
-            if (!new File (appCompatActivity.getCacheDir(),"setup.json").exists()) {
+            if (!new File (appCompatActivity.getCacheDir(), fileNameSetup).exists()) {
                 return null;
             }
-            JSONObject jsonObject = new JSONObject(readTextFile(appCompatActivity.getCacheDir(),"setup.json"));
+            JSONObject jsonObject = new JSONObject(readTextFile(appCompatActivity.getCacheDir(),fileNameSetup));
             for (Iterator<String> it = jsonObject.keys(); it.hasNext(); ) {
                 String key = it.next();
                 Object value = jsonObject.get(key);
@@ -345,7 +364,7 @@ public class SetupApp extends AppCompatActivity {
                 }
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("SetupApp", "getConfigJSON: Error saving JSON", e);
         }
         return flatJSON;
     }

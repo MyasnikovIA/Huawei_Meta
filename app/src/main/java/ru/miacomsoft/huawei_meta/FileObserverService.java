@@ -32,9 +32,9 @@ public class FileObserverService extends Service {
     private LocationListener locationListener;
     private double latitude = 0;
     private double longitude = 0;
-
     private String Error="";
     private File pathDirFile;
+    private File pathProjectDirFile;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -47,6 +47,12 @@ public class FileObserverService extends Service {
             pathDirFile = new File(pathDir);
         } else {
             pathDirFile = new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/Camera/");
+        }
+        String pathProjectDir = intent.getStringExtra("PATH_DIR_PROJECT");
+        if (pathDir != null) {
+            pathProjectDirFile = new File(pathProjectDir);
+        } else {
+            pathProjectDirFile = new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/");
         }
         startWatching();
 
@@ -93,21 +99,30 @@ public class FileObserverService extends Service {
         if (!pathDirFile.exists()) {
             pathDirFile.mkdirs();
         }
+        if (!pathProjectDirFile.exists()) {
+            pathProjectDirFile.mkdirs();
+        }
         fileObserver = new FileObserver(pathDirFile.getAbsolutePath()) {
             @Override
             public void onEvent(int event, String fileName) {
                 if ((FileObserver.CREATE & event) != 0) {
-                    addMetaInfo(pathDirFile,fileName);
+                    addMetaInfo(pathDirFile,pathProjectDirFile,fileName);
                 }
             }
         };
         fileObserver.startWatching();
     }
 
-    private void addMetaInfo(File directory ,String fileName){
+    private void addMetaInfo(File directory ,File pathProjectDirFile ,String fileName){
         try {
             if (!fileName.substring(fileName.lastIndexOf(".")).toLowerCase().equals(".json")) {
-                File imageFile = new File(directory.getPath() + "/" + fileName);
+                File imageFilesrc = new File(directory.getPath() + "/" + fileName);
+                File imageFile = new File(pathProjectDirFile.getPath() + "/" + fileName);
+                // Перенос нового файла из каталога отслеживания, в каталог проекта
+                if (!imageFilesrc.renameTo(imageFile)) {
+                    return;
+                };
+                Thread.sleep(1000);
                 Double orient_azimuth = orientationSensor.getAZIMUTH();
                 Double orient_roll = orientationSensor.getROLL();
                 Double orient_pitch = orientationSensor.getPITCH();
@@ -134,12 +149,12 @@ public class FileObserverService extends Service {
                 scene.put("scene1", scene1);
                 scen.put("scenes", scene);
                 Log.d(TAG, scen.toString(4));
-                createTextFile(directory,name + ".json", scen.toString(4));
+                createTextFile(pathProjectDirFile,name + ".json", scen.toString(4));
                 addCommentToImage(imageFile, scen.toString(4));
                 String comment = readCommentFromImage(imageFile);
                 Log.d(TAG, "Read comment: " + comment );
             }
-        } catch (JSONException e) {
+        } catch (Exception e) {
             Log.e(TAG, "addMetaInfo: " + e.toString());
         }
     }
