@@ -69,7 +69,7 @@ public class FileBrowser {
      * @param EditFileFilterId
      * @param filePath
      */
-    public void getFileList(int ListViewFileId, int EditFileFilterId, String filePath) {
+    public void getFileList(int ListViewFileId, int EditFileFilterId, String filePath,String selectPhoto) {
         listView = appCompatActivity.findViewById(ListViewFileId);
         editFilter = appCompatActivity.findViewById(EditFileFilterId);
         PATH_DIR = filePath;
@@ -79,6 +79,7 @@ public class FileBrowser {
         adapter = new ArrayAdapter<>(appCompatActivity, android.R.layout.simple_list_item_multiple_choice, fileList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+
         // Добавление обработчика двойного клика
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -101,6 +102,10 @@ public class FileBrowser {
             }
         });
 
+        if (selectPhoto!=null) {
+            selectRowByText(selectPhoto);
+        }
+
         // Добавление фильтрации по тексту
         editFilter.addTextChangedListener(new TextWatcher() {
             @Override
@@ -116,6 +121,17 @@ public class FileBrowser {
             public void afterTextChanged(Editable s) {}
         });
     }
+    private void selectRowByText(String targetText) {
+        for (int i = 0; i < fileList.size(); i++) {
+            if (fileList.get(i).equals(targetText)) {
+                // Устанавливаем выбор на найденной строке
+                listView.setItemChecked(i, true);
+                listView.smoothScrollToPosition(i); // Прокручиваем ListView к выбранной строке
+                return;
+            }
+        }
+    }
+
 
     private void filterFileList(String filterText) {
         fileList.clear();

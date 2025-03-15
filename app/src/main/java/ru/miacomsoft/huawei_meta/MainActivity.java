@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private Panorama panorama;
     private String TAG = "MainActivity";
     private boolean isRunService = false;
-
+    private String selectPhoto = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,7 +99,17 @@ public class MainActivity extends AppCompatActivity {
         if (isRunService) {
             startservice();
         }
-
+        File pathProject = new File(PATH_DIR_PROJECT);
+        if (!pathProject.exists()) {
+            pathProject.mkdirs();
+        }
+        File pathDir = new File(PATH_DIR);
+        if (!pathDir.exists()) {
+            pathDir.mkdirs();
+        }
+        if (panorama.getFilePano() !=null) {
+            selectPhoto = panorama.getFilePano().getName();
+        }
         final Button buttonStartHuawei = (Button)findViewById(R.id.buttonSelectPoint);
         buttonStartHuawei.setOnClickListener(v -> {
             runExternalApp.run("com.huawei.cvIntl60");
@@ -111,13 +121,13 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonDeletePanorama = (Button)findViewById(R.id.buttonDeletePanorama);
         buttonDeletePanorama.setOnClickListener(v -> {
             panorama.deletePanorama(()->{
-                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT);
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT,selectPhoto);
             });
         });
         final Button buttonRenamePanprama = (Button)findViewById(R.id.buttonRenamePanprama);
         buttonRenamePanprama.setOnClickListener(v -> {
             panorama.renamePanorama(()->{
-                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT);
+                fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT,selectPhoto);
             });
         });
 
@@ -137,8 +147,16 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, SetupApp.REQUEST_CODE_SETUP_APP);
         });
 
+        final Button buttonMapsPoint = (Button)findViewById(R.id.buttonMapsPoint);
+        buttonMapsPoint.setOnClickListener(v -> {
+            if (panorama.getFilePano() !=null) {
+                Intent intent = new Intent(this, MapViewPoints.class);
+                intent.putExtra("filePano", panorama.getFilePano().getAbsolutePath());
+                startActivity(intent);
+            }
+        });
 
-        fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT);
+        fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT,selectPhoto);
         fileBrowser.onClick((File file)->{
             panorama.getPhoto(R.id.webView,file,new JSONObject());
         });

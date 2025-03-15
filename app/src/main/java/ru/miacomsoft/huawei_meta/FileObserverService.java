@@ -1,28 +1,42 @@
 package ru.miacomsoft.huawei_meta;
 
 import android.app.Service;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileObserver;
+
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+
+import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 
 public class FileObserverService extends Service {
     private static final String TAG = "FileObserverService";
@@ -113,16 +127,107 @@ public class FileObserverService extends Service {
         fileObserver.startWatching();
     }
 
+    public static class MyThread extends Thread {
+        private File imageFilesrc;
+        private File imageFile;
+        public MyThread(File imageFilesrc,File imageFile) {
+            this.imageFilesrc = imageFilesrc;
+            this.imageFile = imageFile;
+        }
+        @Override
+        public void run() {
+            imageFilesrc.renameTo(imageFile);
+        }
+    }
+    public static void copyFile(File src, File dest) throws IOException {
+        // Проверяем, существует ли исходный файл
+        if (!src.exists()) {
+            throw new IOException("Source file does not exist: " + src.getAbsolutePath());
+        }
+
+        // Создаем целевой файл, если он не существует
+        if (!dest.exists()) {
+            dest.createNewFile();
+        }
+
+        // Копируем данные из исходного файла в целевой
+        try (FileInputStream fis = new FileInputStream(src);
+             FileOutputStream fos = new FileOutputStream(dest)) {
+
+            byte[] buffer = new byte[1024];
+            int length;
+
+            while ((length = fis.read(buffer)) > 0) {
+                fos.write(buffer, 0, length);
+            }
+        }
+    }
+    public static boolean compareFiles(File file1, File file2) throws IOException {
+        // Проверяем, имеют ли файлы одинаковый размер
+        if (file1.length() != file2.length()) {
+            return false;
+        }
+
+        try (FileInputStream fis1 = new FileInputStream(file1);
+             FileInputStream fis2 = new FileInputStream(file2)) {
+
+            int byte1, byte2;
+            do {
+                byte1 = fis1.read();
+                byte2 = fis2.read();
+                if (byte1 != byte2) {
+                    return false;
+                }
+            } while (byte1 != -1 && byte2 != -1);
+        }
+        return true;
+    }
+
+    public static void copyFile(Context context, Uri srcUri, Uri destUri) throws IOException {
+        ContentResolver resolver = context.getContentResolver();
+        try (InputStream inputStream = resolver.openInputStream(srcUri);
+             OutputStream outputStream = resolver.openOutputStream(destUri)) {
+            byte[] buffer = new byte[1024];
+            int length;
+
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public void copyFileToDownloads(Context context, File srcFile, String displayName) throws IOException {
+        ContentResolver resolver = context.getContentResolver();
+
+        // Создаем ContentValues для нового файла
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Downloads.DISPLAY_NAME, displayName);
+        values.put(MediaStore.Downloads.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+        // Вставляем файл в MediaStore
+        Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (uri == null) {
+            throw new IOException("Failed to create new MediaStore record.");
+        }
+
+        // Копируем данные из исходного файла в новый файл
+        try (OutputStream out = resolver.openOutputStream(uri);
+             FileInputStream in = new FileInputStream(srcFile)) {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+        }
+    }
+
     private void addMetaInfo(File directory ,File pathProjectDirFile ,String fileName){
         try {
             if (!fileName.substring(fileName.lastIndexOf(".")).toLowerCase().equals(".json")) {
                 File imageFilesrc = new File(directory.getPath() + "/" + fileName);
                 File imageFile = new File(pathProjectDirFile.getPath() + "/" + fileName);
-                // Перенос нового файла из каталога отслеживания, в каталог проекта
-                if (!imageFilesrc.renameTo(imageFile)) {
-                    return;
-                };
-                Thread.sleep(1000);
                 Double orient_azimuth = orientationSensor.getAZIMUTH();
                 Double orient_roll = orientationSensor.getROLL();
                 Double orient_pitch = orientationSensor.getPITCH();
@@ -153,6 +258,16 @@ public class FileObserverService extends Service {
                 addCommentToImage(imageFile, scen.toString(4));
                 String comment = readCommentFromImage(imageFile);
                 Log.d(TAG, "Read comment: " + comment );
+
+                // todo: написать копирорвание файла
+                // copyFileToDownloads(getApplicationContext(), imageFilesrc,imageFile);
+                if (!imageFilesrc.getAbsolutePath().equals(imageFile.getAbsolutePath())) {
+                    copyFile(imageFilesrc,imageFile);
+                    while (!compareFiles(imageFilesrc,imageFile)) {
+                        Thread.sleep(1000);
+                    }
+                    // FileUtils.copyFile(imageFilesrc,imageFile);
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "addMetaInfo: " + e.toString());

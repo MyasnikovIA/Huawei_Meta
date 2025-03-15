@@ -1,7 +1,6 @@
 package ru.miacomsoft.huawei_meta;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,9 +28,6 @@ public class SelectPointActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_point);
-        // Перевернуть ориентацию приложения
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
-
         try {
             Intent intent = getIntent();
             imgInfoPath = intent.getStringExtra("imgInfoPath");
@@ -43,7 +39,7 @@ public class SelectPointActivity extends AppCompatActivity {
         }
         fileBrowser = new FileBrowser(this);
         panorama = new Panorama(this);
-        Button buttonReturn = findViewById(R.id.buttonDeletePoint);
+        Button buttonReturn = findViewById(R.id.buttonSaveImageInfo);
         buttonReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,7 +64,8 @@ public class SelectPointActivity extends AppCompatActivity {
                 });
             }
         });
-        fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,path_dir);
+
+        fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,path_dir,null);
         fileBrowser.onClick((File file)->{
             JSONObject vars = new JSONObject();
             try {

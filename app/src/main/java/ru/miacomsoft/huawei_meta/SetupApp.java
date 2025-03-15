@@ -48,7 +48,7 @@ public class SetupApp extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.select_point);
+        setContentView(R.layout.activity_setup_app);
         // Перевернуть ориентацию приложения
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
 

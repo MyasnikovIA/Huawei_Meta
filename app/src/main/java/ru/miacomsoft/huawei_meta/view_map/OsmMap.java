@@ -113,6 +113,92 @@ public class OsmMap {
         webView.loadUrl("file:///android_asset/osm.html?lat="+lat+"&lon="+lon+"&zoom="+zoom);
     }
 
+    public void onViewMapArrayPoint(int R_id_webView,double lat, double lon,int zoom){
+        webView = appCompatActivity.findViewById(R_id_webView);
+        webView.setWebViewClient(new WebViewClient()); // Устанавливаем WebViewClient для загрузки URL внутри WebView
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true); // Включение JavaScript
+        settings.setDomStorageEnabled(true); // Включение DOM Storage
+        settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK); // Режим кэширования
+        settings.setDatabaseEnabled(true); // Включение кэша приложения
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Nullable
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                //if (url.contains("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")) {
+                // todo: дописать механизм кэширования картинок карты
+                if (url.indexOf(".tile.openstreetmap.org/")!=-1 && url.substring(url.lastIndexOf(".")+1).toLowerCase().equals("png")) {
+                    // Заменяем {s}, {z}, {x}, {y} на реальные значения из URL
+                    String[] parts = url.split("/");
+                    String z = parts[parts.length - 3];
+                    String x = parts[parts.length - 2];
+                    String y = parts[parts.length - 1].replace(".png", "");
+                    String s = url.replaceAll("https://","");
+                    s = s.substring(0,s.indexOf("."));
+                    String fileName = "map_" + s + "_"+ z + "_" + x + "_" + y + ".png";
+
+                    // Хронение снимков карты в каталоге кэша приложения
+                    // /data/data/<ваш.package.name>/cache/
+                    // File mapDir =appCompatActivity.getCacheDir();
+
+                    // Хронение снимков карты в каталоге фотографий
+                    File mapDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath(), "MAP_IMG");
+                    if (!mapDir.exists()) {
+                        mapDir.mkdirs();
+                    }
+
+                    Map<String, String> headers = request.getRequestHeaders();
+                    String method = request.getMethod();
+
+                    // Логируем параметры запроса
+                    Log.d("WebResourceRequest", "URL: " + url);
+                    Log.d("WebResourceRequest", "Method: " + method);
+                    for (Map.Entry<String, String> entry : headers.entrySet()) {
+                        Log.d("WebResourceRequest", "Header: " + entry.getKey() + " = " + entry.getValue());
+                    }
+
+                    // /data/data/<ваш.package.name>/cache/
+                    File file = new File(mapDir, fileName);
+                    if (file.exists()) {
+                        // Если файл уже есть, возвращаем его
+                        try {
+                            InputStream inputStream = new FileInputStream(file);
+                            return new WebResourceResponse("image/png", "UTF-8", inputStream);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        new DownloadFileTask().execute(url, file.getAbsolutePath());
+                        return super.shouldInterceptRequest(view, request);
+                    }
+                }
+                return super.shouldInterceptRequest(view, request);
+            }
+        });
+        webView.loadUrl("file:///android_asset/osm.html?lat="+lat+"&lon="+lon+"&zoom="+zoom);
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("javascript: const markersData = [" +
+                "        { lat: 53.35294643320362, lon: 83.67589294910432, name: \"Маркер 1\" }," +
+                "        { lat: 53.0, lon: 83.68589294910432, name: \"Маркер 2\" }," +
+                "        { lat: 53.4, lon: 83.69589294910432, name: \"Маркер 3\" }" +
+                "    ];");
+        sb.append("  " +
+                "    function onMarkerClick(markerData) {\n" +
+                "        console.log('Вы нажали на маркер: '+markerData.name+' ');\n" +
+                "    }");
+        sb.append("  markersData.forEach(markerData => {\n" +
+                "        const marker = L.marker([markerData.lat, markerData.lon]).addTo(map)\n" +
+                "            .bindPopup(`<b>${markerData.name}</b><br>Lat: ${markerData.lat}, Lon: ${markerData.lon}`)\n" +
+                "            .on('click', () => onMarkerClick(markerData));\n" +
+                "    });" );
+        webView.loadUrl(sb.toString());
+
+    }
+
+
     private class DownloadFileTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... urls) {
@@ -162,6 +248,21 @@ public class OsmMap {
         if (webView != null) {
             StringBuffer sb = new StringBuffer();
             sb.append("javascript: marker.setLatLng([").append(lat).append(", ").append(lon).append("]).bindPopup(`Latitude: ${").append(lat).append("} Longitude: ${").append(lon).append("}`).openPopup();");
+            webView.loadUrl(sb.toString());
+        }
+    }
+
+    public void setCenterGps(double lat ,double lon) {
+        if (webView != null) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("javascript: map.setView([").append(lat).append(", ").append(lon).append("]);");
+            webView.loadUrl(sb.toString());
+        }
+    }
+    public void addPoint(double lat ,double lon) {
+        if (webView != null) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("javascript: markeOne = L.marker(["+lat+", "+lon+"]).addTo(map).bindPopup(`<b>markerData.name</b><br>"+lat+": markerData."+lat+"}, "+lon+": markerData.lon`).on('click', () => onMarkerClick(markerData));");
             webView.loadUrl(sb.toString());
         }
     }
