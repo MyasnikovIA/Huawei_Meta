@@ -1,5 +1,6 @@
 package ru.miacomsoft.huawei_meta;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -52,6 +53,7 @@ public class FileObserverService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
@@ -72,7 +74,7 @@ public class FileObserverService extends Service {
 
         orientationSensor = new OrientationSensor(getBaseContext());
         orientationSensor.onResume();
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -226,6 +228,14 @@ public class FileObserverService extends Service {
     private void addMetaInfo(File directory ,File pathProjectDirFile ,String fileName){
         try {
             if (!fileName.substring(fileName.lastIndexOf(".")).toLowerCase().equals(".json")) {
+                if (longitude==0 || latitude==0) {
+                    @SuppressLint("MissingPermission")
+                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (location != null) {
+                        longitude = location.getLongitude();
+                        latitude = location.getLatitude();
+                    }
+                }
                 File imageFilesrc = new File(directory.getPath() + "/" + fileName);
                 File imageFile = new File(pathProjectDirFile.getPath() + "/" + fileName);
                 Double orient_azimuth = orientationSensor.getAZIMUTH();
