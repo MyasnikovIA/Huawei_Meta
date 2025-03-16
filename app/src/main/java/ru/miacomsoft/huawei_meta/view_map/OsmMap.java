@@ -2,6 +2,7 @@ package ru.miacomsoft.huawei_meta.view_map;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -11,6 +12,7 @@ import android.webkit.WebViewClient;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -27,7 +29,14 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import ru.miacomsoft.huawei_meta.view_map.libjs.OsmMapJs;
+import ru.miacomsoft.huawei_meta.view_photo.libjs.PanoramaJs;
+
 public class OsmMap {
+    public interface CallbackEmptyReturn {
+        void call();
+    }
+
     public interface CallbackStringEmptyReturn {
         void call(String value);
     }
@@ -44,7 +53,7 @@ public class OsmMap {
        this.appCompatActivity = appCompatActivity;
     }
 
-    public void onViewMap(int R_id_webView,double lat, double lon,int zoom){
+    public void onViewMap(int R_id_webView,double lat, double lon,int zoom,CallbackEmptyReturn callbackEmptyReturn){
         webView = appCompatActivity.findViewById(R_id_webView);
         webView.setWebViewClient(new WebViewClient()); // Устанавливаем WebViewClient для загрузки URL внутри WebView
         WebSettings settings = webView.getSettings();
@@ -52,7 +61,6 @@ public class OsmMap {
         settings.setDomStorageEnabled(true); // Включение DOM Storage
         settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK); // Режим кэширования
         settings.setDatabaseEnabled(true); // Включение кэша приложения
-
         webView.setWebViewClient(new WebViewClient() {
             @Nullable
             @Override
@@ -110,10 +118,10 @@ public class OsmMap {
         });
         // Загрузка начальной карты
         // webView.loadUrl("https://www.openstreetmap.org/?mlat=53.3530966&mlon=83.6758076#map=17/53.3530966/83.6758076");
-        webView.loadUrl("file:///android_asset/osm.html?lat="+lat+"&lon="+lon+"&zoom="+zoom);
+        loadPage("file:///android_asset/osm.html?lat="+lat+"&lon="+lon+"&zoom="+zoom,callbackEmptyReturn);
     }
 
-    public void onViewMapArrayPoint(int R_id_webView,double lat, double lon,int zoom){
+    public void onViewMapArrayPoint(int R_id_webView, double lat, double lon, int zoom, JSONArray points){
         webView = appCompatActivity.findViewById(R_id_webView);
         webView.setWebViewClient(new WebViewClient()); // Устанавливаем WebViewClient для загрузки URL внутри WebView
         WebSettings settings = webView.getSettings();
@@ -121,7 +129,7 @@ public class OsmMap {
         settings.setDomStorageEnabled(true); // Включение DOM Storage
         settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK); // Режим кэширования
         settings.setDatabaseEnabled(true); // Включение кэша приложения
-
+        webView.addJavascriptInterface(new OsmMapJs(appCompatActivity, webView), "OsmMapJs");
         webView.setWebViewClient(new WebViewClient() {
             @Nullable
             @Override
@@ -177,26 +185,29 @@ public class OsmMap {
                 return super.shouldInterceptRequest(view, request);
             }
         });
-        webView.loadUrl("file:///android_asset/osm.html?lat="+lat+"&lon="+lon+"&zoom="+zoom);
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("javascript: const markersData = [" +
-                "        { lat: 53.35294643320362, lon: 83.67589294910432, name: \"Маркер 1\" }," +
-                "        { lat: 53.0, lon: 83.68589294910432, name: \"Маркер 2\" }," +
-                "        { lat: 53.4, lon: 83.69589294910432, name: \"Маркер 3\" }" +
-                "    ];");
-        sb.append("  " +
-                "    function onMarkerClick(markerData) {\n" +
-                "        console.log('Вы нажали на маркер: '+markerData.name+' ');\n" +
-                "    }");
-        sb.append("  markersData.forEach(markerData => {\n" +
-                "        const marker = L.marker([markerData.lat, markerData.lon]).addTo(map)\n" +
-                "            .bindPopup(`<b>${markerData.name}</b><br>Lat: ${markerData.lat}, Lon: ${markerData.lon}`)\n" +
-                "            .on('click', () => onMarkerClick(markerData));\n" +
-                "    });" );
-        webView.loadUrl(sb.toString());
-
+        loadPage("file:///android_asset/osm.html?lat="+lat+"&lon="+lon+"&zoom="+zoom, ()->{
+            StringBuffer sb = new StringBuffer();
+            sb.append("javascript: markers_data_arr="+points.toString()+";");
+            sb.append("markers_data_arr.forEach(markerData => {const markeOne = L.marker([markerData.lat, markerData.lon]).addTo(map).bindPopup(`<b> <a href=\"javascript:onClickPointName(${JSON.stringify(markerData)});\">${markerData.name}</a> </b><br>Lat: ${markerData.lat}, Lon: ${markerData.lon}`).on('click', () => onMarkerClick(markerData));});");
+            webView.loadUrl(sb.toString());
+        });
     }
+
+    private void loadPage(String urlPage,CallbackEmptyReturn callbackEmptyReturn) {
+        webView.setWebChromeClient(new WebChromeClient(){
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                if(newProgress==100){
+                    if (callbackEmptyReturn!=null) {
+                        callbackEmptyReturn.call();
+                    }
+                }
+            }
+        });
+        webView.loadUrl(urlPage);
+    }
+
 
 
     private class DownloadFileTask extends AsyncTask<String, Void, Void> {

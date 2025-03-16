@@ -150,7 +150,7 @@ public class MapView extends AppCompatActivity {
         if (osmMap==null) {
             osmMap = new OsmMap(this);
         }
-        osmMap.onViewMap(R.id.webView,lat,lon,19);
+        osmMap.onViewMap(R.id.webView,lat,lon,19,null);
     }
 
 

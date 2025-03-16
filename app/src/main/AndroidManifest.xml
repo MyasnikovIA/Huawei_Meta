@@ -17,6 +17,9 @@
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission
+        android:name="android.permission.INJECT_EVENTS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -30,6 +33,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ViewPanp360"
+            android:exported="false" />
+        <activity
             android:name=".MapViewPoints"
             android:exported="false" />
         <activity
@@ -37,7 +43,7 @@
             android:exported="false" />
         <activity
             android:name=".MapView"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity android:name=".SelectPointActivity" />
         <activity android:name=".EditPointActivity" />
         <activity
@@ -51,6 +57,7 @@
         </activity>
 
         <service android:name=".FileObserverService" />
+        <service android:name=".ClickService" />
     </application>
 
 </manifest>

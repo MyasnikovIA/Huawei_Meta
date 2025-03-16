@@ -170,6 +170,17 @@ public class MainActivity extends AppCompatActivity {
             serviceIntent.putExtra("PATH_DIR_PROJECT", PATH_DIR_PROJECT);
             startService(serviceIntent);
             Toast.makeText(this, "Сервис запущен ", Toast.LENGTH_LONG).show();
+
+//  todo: написать механизм  кликанья по координатам
+//            // Координаты для эмуляции нажатия
+//            int x = 500; // Пример координаты X
+//            int y = 800; // Пример координаты Y
+//            // Запуск сервиса
+//            Intent intent = new Intent(this, ClickService.class);
+//            intent.putExtra("x", x);
+//            intent.putExtra("y", y);
+//            startService(intent);
+
         }
         //  stopService(serviceIntent);
         //  serviceIntent = null;

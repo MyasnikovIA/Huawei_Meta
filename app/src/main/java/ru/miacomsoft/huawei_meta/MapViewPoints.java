@@ -19,6 +19,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,7 +71,7 @@ public class MapViewPoints extends AppCompatActivity {
         if (filePano != null) {
             filePanoFile = new File(filePano);
             filePanoJson = new File(filePanoFile.getParentFile().getAbsolutePath(), filePanoFile.getName().substring(0, filePanoFile.getName().length() - 4) + ".json");
-            String imageInfoJsonStr = readTextFile(filePanoJson.getParentFile(), filePanoJson.getName());
+            String imageInfoJsonStr = SetupApp.readTextFile(filePanoJson.getParentFile(), filePanoJson.getName());
             try {
                 objJson = new JSONObject(imageInfoJsonStr);
                 JSONObject scenes1 = objJson.getJSONObject("scenes").getJSONObject("scene1");
@@ -118,46 +119,39 @@ public class MapViewPoints extends AppCompatActivity {
         if (osmMap==null) {
             osmMap = new OsmMap(this);
         }
-        osmMap.onViewMap(R.id.webView,lat,lon,19);
         File[] files = filePanoFile.getParentFile().listFiles();
+        JSONArray pointsJson = new JSONArray();
         if (files != null) {
             for (File file : files) {
                 if (file.isFile()) {
                     String fileName = file.getName();
                     if (fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase().equals("json")) {
-                        // todo: дописать чтение файла и получение координат из json
+                        try {
+                            JSONObject infoPanoLocal = new JSONObject(SetupApp.readTextFile(file.getParentFile(), file.getName()));
+                            JSONObject infoPanoLocalOne = infoPanoLocal.getJSONObject("scenes").getJSONObject("scene1");
+                            JSONObject row = new JSONObject();
+                            row.put("name",infoPanoLocalOne.getString("panorama"));
+                            row.put("dir_name",file.getParentFile());
+                            row.put("file_name",file.getName());
+                            row.put("lon",infoPanoLocalOne.getDouble("lon"));
+                            row.put("lat",infoPanoLocalOne.getDouble("lat"));
+                            pointsJson.put(row);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
         }
-                
-        // { lat: 53.37294643320362, lon: 83.69589294910432, name: "Маркер 3" }
+        osmMap.onViewMapArrayPoint(R.id.webView,lat,lon,19,pointsJson);
+       // { lat: 53.37294643320362, lon: 83.69589294910432, name: "Маркер 3" }
        // osmMap.addPoint(53.37294643320362,83.69589294910432);
- //         const markeOne = L.marker([markerData.lat, markerData.lon]).addTo(map).bindPopup(`<b>${markerData.name}</b><br>Lat: ${markerData.lat}, Lon: ${markerData.lon}`).on('click', () => onMarkerClick(markerData));
+       // const markeOne = L.marker([markerData.lat, markerData.lon]).addTo(map).bindPopup(`<b>${markerData.name}</b><br>Lat: ${markerData.lat}, Lon: ${markerData.lon}`).on('click', () => onMarkerClick(markerData));
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-    }
-
-    private String readTextFile(File directory, String fileName) {
-        File file = new File(directory.getAbsolutePath()+"/"+fileName);
-        StringBuilder content = new StringBuilder();
-        if (!file.exists()) {
-            Log.e(TAG, "readTextFile: File does not exist");
-            return null;
-        }
-        try (FileInputStream fis = new FileInputStream(file);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                content.append(line).append("\n");
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "readTextFile: " + e.toString());
-        }
-        return content.toString();
     }
 }

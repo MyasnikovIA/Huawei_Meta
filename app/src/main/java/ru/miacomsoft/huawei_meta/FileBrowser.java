@@ -1,5 +1,7 @@
 package ru.miacomsoft.huawei_meta;
 
+import static ru.miacomsoft.huawei_meta.SetupApp.readTextFile;
+
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -170,8 +172,27 @@ public class FileBrowser {
                             if (!fileInfoJson.exists()) {
                                 Panorama.createEmptyInfoFileJson(file);
                             }
-                            fileList.add(file.getName());
-                            fileListAbs.put(file.getName(),file);
+                            String imageInfoJsonStr = readTextFile(fileInfoJson.getParentFile(), fileInfoJson.getName());
+                            try {
+                                JSONObject objJson = new JSONObject(imageInfoJsonStr);
+                                JSONObject scenes1 = objJson.getJSONObject("scenes").getJSONObject("scene1");
+                                String prefixStr = "(";
+                                if (scenes1.getDouble("lat")==0 && scenes1.getDouble("lon")==0) {
+                                    prefixStr += "NoGPS";
+                                };
+                                if (scenes1.getJSONArray("hotSpots").length()==0){
+
+                                  //  prefixStr += "NoPoint ";
+                                };
+                                prefixStr += ")";
+                                if (prefixStr.length()==2) {
+                                    prefixStr = "";
+                                }
+                                fileList.add(file.getName());
+                                fileListAbs.put(prefixStr+file.getName(),file);
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
                 }

@@ -369,7 +369,7 @@ public class SetupApp extends AppCompatActivity {
         return flatJSON;
     }
 
-    private static String readTextFile(File directory, String fileName) {
+    public static String readTextFile(File directory, String fileName) {
         File file = new File(directory.getAbsolutePath()+"/"+fileName);
         StringBuilder content = new StringBuilder();
         if (!file.exists()) {

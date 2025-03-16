@@ -7,6 +7,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.EditText;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import ru.miacomsoft.huawei_meta.R;
+import ru.miacomsoft.huawei_meta.view_map.OsmMap;
 import ru.miacomsoft.huawei_meta.view_photo.lib.SqlLiteOrm;
 import ru.miacomsoft.huawei_meta.view_photo.libjs.Android;
 import ru.miacomsoft.huawei_meta.view_photo.libjs.Console;
@@ -105,6 +107,7 @@ public class Panorama {
         myWebView.addJavascriptInterface(new Android(appCompatActivity, myWebView, sqlLiteORM), "android");
         myWebView.addJavascriptInterface(new Console(appCompatActivity, myWebView, sqlLiteORM), "console");
         myWebView.addJavascriptInterface(new PanoramaJs(appCompatActivity, myWebView), "panorama");
+
         try {
             myWebView.addJavascriptInterface(new LocalStorage(appCompatActivity, myWebView, sqlLiteORM), "localStorage");
         } catch (JSONException e) {
@@ -142,23 +145,44 @@ public class Panorama {
         } catch (Exception e) {
             Log.e(TAG, "getPhoto vars: " + e.toString());
         }
-
-        myWebView.loadUrl("file:///android_asset/pano2.html?img=" + fileInfo.getAbsolutePath() + "&width=" + myWebView.getWidth() + "&height=" + myWebView.getHeight() + "&json_info=" + imageInfoJson.toString() + "&path_dir=" + file.getParentFile().getAbsolutePath()+"&from_pitch="+from_pitch+"&from_yaw="+from_yaw);
-        StringBuffer sb = new StringBuffer();
-        sb.append("javascript: ").append("local_file='").append("file://" + file.getAbsolutePath()).append("';");
-        sb.append("path_dir = '" + file.getParentFile().getAbsolutePath() + "';");
+        String urlStr = "file:///android_asset/pano2.html?img=" + fileInfo.getAbsolutePath() + "&width=" + myWebView.getWidth() + "&height=" + myWebView.getHeight() + "&json_info=" + imageInfoJson.toString() + "&path_dir=" + file.getParentFile().getAbsolutePath()+"&from_pitch="+from_pitch+"&from_yaw="+from_yaw;
+        loadPage(urlStr, ()->{
+            //sb.append("console.log('------'+path_dir);");
+            //myWebView.loadUrl(sb.toString());
+        });
+//            StringBuffer sb = new StringBuffer();
+//            sb.append("javascript: ").append("local_file='").append("file://" + file.getAbsolutePath()).append("';");
+//            //sb.append("path_dir = '" + file.getParentFile().getAbsolutePath() + "';");
+//            myWebView.loadUrl(sb.toString());
         for (Iterator<String> it = vars.keys(); it.hasNext(); ) {
             try {
                 String keyStr = it.next();
                 Object keyvalue = vars.get(keyStr);
+                StringBuffer sb = new StringBuffer();
+                sb.append("javascript: ");
                 sb.append(keyStr).append(" = '").append(keyvalue).append("';");
+                myWebView.loadUrl(sb.toString());
             } catch (Exception e) {
                 Log.e(TAG, "getPhoto vars: " + e.toString());
             }
         }
-        //sb.append("console.log('------'+path_dir);");
-        myWebView.loadUrl(sb.toString());
+
     }
+    private void loadPage(String urlPage, OsmMap.CallbackEmptyReturn callbackEmptyReturn) {
+        myWebView.setWebChromeClient(new WebChromeClient(){
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                if(newProgress==100){
+                    if (callbackEmptyReturn!=null) {
+                        callbackEmptyReturn.call();
+                    }
+                }
+            }
+        });
+        myWebView.loadUrl(urlPage);
+    }
+
     public void setVar(String key, String value) {
         if (myWebView != null) {
             StringBuffer sb = new StringBuffer();

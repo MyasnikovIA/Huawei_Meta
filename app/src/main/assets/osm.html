@@ -26,29 +26,13 @@
     const map = L.map('map').setView([lat, lon], zoom);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
 
-
-
     let marker = null;
     marker = L.marker([lat, lon]).addTo(map).bindPopup(`Lat: ${lat}; Lon: ${lon}`).openPopup();
-
-
- // Массив маркеров с координатами и дополнительной информацией
-    const markersData = [
-        //{ lat: 53.35294643320362, lon: 83.67589294910432, name: "Маркер 1" },
-        //{ lat: 53.36294643320362, lon: 83.68589294910432, name: "Маркер 2" },
-        //{ lat: 53.37294643320362, lon: 83.69589294910432, name: "Маркер 3" }
-    ];
-
     // Функция, которая будет вызываться при нажатии на маркер
     function onMarkerClick(markerData) {
-        console.log(markerData.name);
+        console.log(JSON.stringify(markerData));
+        OsmMapJs.opanPanorama360(JSON.stringify(markerData));
     }
-
-    // Добавляем маркеры на карту
-    markersData.forEach(markerData => {
-        const markeOne = L.marker([markerData.lat, markerData.lon]).addTo(map).bindPopup(`<b>${markerData.name}</b><br>Lat: ${markerData.lat}, Lon: ${markerData.lon}`).on('click', () => onMarkerClick(markerData));
-    });
-
 
     map.on('click', function(e) {
         lat = e.latlng.lat;
