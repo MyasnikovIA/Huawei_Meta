@@ -223,7 +223,6 @@ public class Panorama {
             }
             createTextFile(fileInfo.getParentFile(),fileInfo.getName(),imageInfoJson.toString(4));
             getPhoto(webViewId, filePano, new JSONObject());
-
             // {"title":"","yaw":-53.236924148647866,"pitch":-12.381230171877444,"point_yaw":115.1247005243223,"point_pitch":49.372493628283046,
             // "panorama_url":"\/storage\/emulated\/0\/DCIM\/CV60\/PIC_20250307_221549.json",
             // "type":"scene",

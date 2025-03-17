@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Button buttonMap = (Button)findViewById(R.id.buttonCancelSelectMapPoint);
         buttonMap.setOnClickListener(v -> {
-            if (panorama.getFilePano() !=null) {
+            if (panorama.getFilePano() != null  && panorama.getFilePano().exists()) {
                 // Запуск окна привязки панорамной фото к карте
                 Intent intent = new Intent(this, MapView.class);
                 intent.putExtra("filePano", panorama.getFilePano().getAbsolutePath()); // Передаем путь к Jpg файлу панорамы
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Button buttonMapsPoint = (Button)findViewById(R.id.buttonMapsPoint);
         buttonMapsPoint.setOnClickListener(v -> {
-            if (panorama.getFilePano() !=null) {
+            if (panorama.getFilePano() !=null && panorama.getFilePano().exists() ) {
                 Intent intent = new Intent(this, MapViewPoints.class);
                 intent.putExtra("filePano", panorama.getFilePano().getAbsolutePath());
                 startActivity(intent);
@@ -158,7 +158,9 @@ public class MainActivity extends AppCompatActivity {
 
         fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT,selectPhoto);
         fileBrowser.onClick((File file)->{
-            panorama.getPhoto(R.id.webView,file,new JSONObject());
+            if (file.exists()) {
+                panorama.getPhoto(R.id.webView, file, new JSONObject());
+            }
         });
     }
 
@@ -246,8 +248,6 @@ public class MainActivity extends AppCompatActivity {
         } else if (requestCode == SetupApp.REQUEST_CODE_SETUP_APP && resultCode == RESULT_OK && data != null) {
             onStartApp();
         }
-
-
     }
 
 

@@ -18,10 +18,8 @@ public class ClickService extends Service {
         // Получаем координаты из Intent
         int x = intent.getIntExtra("x", 0);
         int y = intent.getIntExtra("y", 0);
-
         // Эмулируем нажатие
         emulateClick(x, y);
-
         return START_NOT_STICKY;
     }
 
@@ -48,7 +46,6 @@ public class ClickService extends Service {
                     y,
                     0
             );
-
             // Отправляем события
             Instrumentation instrumentation = new Instrumentation();
             instrumentation.sendPointerSync(downEvent);

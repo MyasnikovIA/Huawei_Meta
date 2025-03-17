@@ -1,11 +1,14 @@
 package ru.miacomsoft.huawei_meta;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,6 +25,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -229,11 +233,13 @@ public class FileObserverService extends Service {
         try {
             if (!fileName.substring(fileName.lastIndexOf(".")).toLowerCase().equals(".json")) {
                 if (longitude==0 || latitude==0) {
-                    @SuppressLint("MissingPermission")
-                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (location != null) {
-                        longitude = location.getLongitude();
-                        latitude = location.getLatitude();
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        @SuppressLint("MissingPermission")
+                        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (location != null) {
+                            longitude = location.getLongitude();
+                            latitude = location.getLatitude();
+                        }
                     }
                 }
                 File imageFilesrc = new File(directory.getPath() + "/" + fileName);
@@ -269,7 +275,8 @@ public class FileObserverService extends Service {
                 String comment = readCommentFromImage(imageFile);
                 Log.d(TAG, "Read comment: " + comment );
 
-                // todo: написать копирорвание файла
+                // todo: решить проблему синхронного копирования файлов из отслеживаемого  каталога , в каталог проекта
+                //  написать копирорвание файла
                 // copyFileToDownloads(getApplicationContext(), imageFilesrc,imageFile);
                 if (!imageFilesrc.getAbsolutePath().equals(imageFile.getAbsolutePath())) {
                     copyFile(imageFilesrc,imageFile);

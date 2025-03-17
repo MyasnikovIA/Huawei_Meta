@@ -97,7 +97,9 @@ public class SetupApp extends AppCompatActivity {
             defaultJSON.put("isRunService", isRunServiceProperty);
 
             JSONObject projectProperty = new JSONObject();
-            projectProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/HUAWEI_META");
+            // todo: решить проблему синхронного копирования файлов из отслеживаемого  каталога , в каталог проекта
+            //  projectProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/HUAWEI_META");
+            projectProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/CV60");
             projectProperty.put("type", "string");
             projectProperty.put("text", "Проекта");
             defaultJSON.put("projectDir", projectProperty);
