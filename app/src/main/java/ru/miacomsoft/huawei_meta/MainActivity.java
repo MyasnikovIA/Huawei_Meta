@@ -155,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
         fileBrowser.getFileList(R.id.FileListView,R.id.editTextSearch,PATH_DIR_PROJECT,selectPhoto);
         fileBrowser.onClick((File file)->{
             if (file.exists()) {

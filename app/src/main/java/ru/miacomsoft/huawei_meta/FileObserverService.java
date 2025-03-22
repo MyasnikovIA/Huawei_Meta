@@ -54,6 +54,7 @@ public class FileObserverService extends Service {
     private String Error="";
     private File pathDirFile;
     private File pathProjectDirFile;
+    private GpsManager gpsManager;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -62,6 +63,10 @@ public class FileObserverService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        gpsManager = new GpsManager(this);
+        gpsManager.enableGps();
+        gpsManager.requestLocationUpdates();
+
         String pathDir = intent.getStringExtra("PATH_DIR");
         if (pathDir != null) {
             pathDirFile = new File(pathDir);
@@ -79,30 +84,30 @@ public class FileObserverService extends Service {
         orientationSensor = new OrientationSensor(getBaseContext());
         orientationSensor.onResume();
 
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                // Получаем координаты
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
-                Log.d("LocationService", "Latitude: " + latitude + ", Longitude: " + longitude);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-            @Override
-            public void onProviderEnabled(String provider) {}
-
-            @Override
-            public void onProviderDisabled(String provider) {}
-        };
+//        locationListener = new LocationListener() {
+//            @Override
+//            public void onLocationChanged(Location location) {
+//                // Получаем координаты
+//                latitude = location.getLatitude();
+//                longitude = location.getLongitude();
+//                Log.d("LocationService", "Latitude: " + latitude + ", Longitude: " + longitude);
+//            }
+//
+//            @Override
+//            public void onStatusChanged(String provider, int status, Bundle extras) {}
+//
+//            @Override
+//            public void onProviderEnabled(String provider) {}
+//
+//            @Override
+//            public void onProviderDisabled(String provider) {}
+//        };
         // Запрашиваем обновления местоположения
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+//        } catch (SecurityException e) {
+//            e.printStackTrace();
+//        }
         return START_STICKY; // Сервис будет перезапущен, если система его завершит
     }
 
@@ -232,16 +237,26 @@ public class FileObserverService extends Service {
     private void addMetaInfo(File directory ,File pathProjectDirFile ,String fileName){
         try {
             if (!fileName.substring(fileName.lastIndexOf(".")).toLowerCase().equals(".json")) {
-                if (longitude==0 || latitude==0) {
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        @SuppressLint("MissingPermission")
-                        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        if (location != null) {
-                            longitude = location.getLongitude();
-                            latitude = location.getLatitude();
-                        }
-                    }
+//                if (longitude==0 || latitude==0) {
+//                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                        @SuppressLint("MissingPermission")
+//                        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                        if (location != null) {
+//                            longitude = location.getLongitude();
+//                            latitude = location.getLatitude();
+//                        }
+//                    }
+//                }
+
+                JSONObject locationJson = gpsManager.showLocation();
+                if (locationJson.has("lon")) {
+                    longitude = locationJson.getDouble("lon");
                 }
+                if (locationJson.has("lat")) {
+                    latitude = locationJson.getDouble("lat");
+                }
+
+
                 File imageFilesrc = new File(directory.getPath() + "/" + fileName);
                 File imageFile = new File(pathProjectDirFile.getPath() + "/" + fileName);
                 Double orient_azimuth = orientationSensor.getAZIMUTH();

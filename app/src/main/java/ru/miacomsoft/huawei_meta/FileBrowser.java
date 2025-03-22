@@ -176,12 +176,11 @@ public class FileBrowser {
                             try {
                                 JSONObject objJson = new JSONObject(imageInfoJsonStr);
                                 JSONObject scenes1 = objJson.getJSONObject("scenes").getJSONObject("scene1");
-                                String prefixStr = "(";
+                                String prefixStr = " (";
                                 if (scenes1.getDouble("lat")==0 && scenes1.getDouble("lon")==0) {
                                     prefixStr += "NoGPS";
                                 };
                                 if (scenes1.getJSONArray("hotSpots").length()==0){
-
                                   //  prefixStr += "NoPoint ";
                                 };
                                 prefixStr += ")";
@@ -189,7 +188,7 @@ public class FileBrowser {
                                     prefixStr = "";
                                 }
                                 fileList.add(file.getName());
-                                fileListAbs.put(prefixStr+file.getName(),file);
+                                fileListAbs.put(file.getName()+prefixStr,file);
                             } catch (JSONException e) {
                                 throw new RuntimeException(e);
                             }
