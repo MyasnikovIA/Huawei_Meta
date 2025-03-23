@@ -34,8 +34,11 @@ import org.json.JSONObject;
 
 
 import org.apache.commons.io.FileUtils;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -155,24 +158,70 @@ public class FileObserverService extends Service {
         if (!src.exists()) {
             throw new IOException("Source file does not exist: " + src.getAbsolutePath());
         }
-
         // Создаем целевой файл, если он не существует
-        if (!dest.exists()) {
-            dest.createNewFile();
+        if (dest.exists()) {
+            dest.delete();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
-
+        dest.createNewFile();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        FileInputStream fis = null;
+        FileOutputStream fos =null;
         // Копируем данные из исходного файла в целевой
-        try (FileInputStream fis = new FileInputStream(src);
-             FileOutputStream fos = new FileOutputStream(dest)) {
-
+        try {
+            fis = new FileInputStream(src);
+            fos = new FileOutputStream(dest);
             byte[] buffer = new byte[1024];
             int length;
-
             while ((length = fis.read(buffer)) > 0) {
                 fos.write(buffer, 0, length);
             }
+            fos.flush();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
+
+    public static ByteArrayOutputStream  readFileToByteArray(File file) throws IOException {
+        FileInputStream inputStream = new FileInputStream(file);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        byte[] buffer = new byte[1024]; // Буфер для чтения данных
+        int length;
+        while ((length = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, length); // Записываем данные в ByteArrayOutputStream
+        }
+
+        inputStream.close();
+        //return outputStream.toByteArray(); // Преобразуем поток в массив байтов
+        return outputStream;
+    }
+
     public static boolean compareFiles(File file1, File file2) throws IOException {
         // Проверяем, имеют ли файлы одинаковый размер
         if (file1.length() != file2.length()) {
@@ -207,33 +256,6 @@ public class FileObserverService extends Service {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    public void copyFileToDownloads(Context context, File srcFile, String displayName) throws IOException {
-        ContentResolver resolver = context.getContentResolver();
-
-        // Создаем ContentValues для нового файла
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Downloads.DISPLAY_NAME, displayName);
-        values.put(MediaStore.Downloads.MIME_TYPE, "image/jpeg");
-        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-
-        // Вставляем файл в MediaStore
-        Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-        if (uri == null) {
-            throw new IOException("Failed to create new MediaStore record.");
-        }
-
-        // Копируем данные из исходного файла в новый файл
-        try (OutputStream out = resolver.openOutputStream(uri);
-             FileInputStream in = new FileInputStream(srcFile)) {
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = in.read(buffer)) > 0) {
-                out.write(buffer, 0, length);
-            }
-        }
-    }
-
     private void addMetaInfo(File directory ,File pathProjectDirFile ,String fileName){
         try {
             if (!fileName.substring(fileName.lastIndexOf(".")).toLowerCase().equals(".json")) {
@@ -255,7 +277,6 @@ public class FileObserverService extends Service {
                 if (locationJson.has("lat")) {
                     latitude = locationJson.getDouble("lat");
                 }
-
 
                 File imageFilesrc = new File(directory.getPath() + "/" + fileName);
                 File imageFile = new File(pathProjectDirFile.getPath() + "/" + fileName);
@@ -286,23 +307,60 @@ public class FileObserverService extends Service {
                 scen.put("scenes", scene);
                 Log.d(TAG, scen.toString(4));
                 createTextFile(pathProjectDirFile,name + ".json", scen.toString(4));
-                addCommentToImage(imageFile, scen.toString(4));
-                String comment = readCommentFromImage(imageFile);
-                Log.d(TAG, "Read comment: " + comment );
+                //addCommentToImage(imageFile, scen.toString(4));
+                //String comment = readCommentFromImage(imageFile);
+                //Log.d(TAG, "Read comment: " + comment );
 
-                // todo: решить проблему синхронного копирования файлов из отслеживаемого  каталога , в каталог проекта
-                //  написать копирорвание файла
-                // copyFileToDownloads(getApplicationContext(), imageFilesrc,imageFile);
                 if (!imageFilesrc.getAbsolutePath().equals(imageFile.getAbsolutePath())) {
-                    copyFile(imageFilesrc,imageFile);
-                    while (!compareFiles(imageFilesrc,imageFile)) {
-                        Thread.sleep(1000);
-                    }
-                    // FileUtils.copyFile(imageFilesrc,imageFile);
+                    copyFile(imageFilesrc,imageFile); // вариант копирования 1
+                    // byte[] fileData = readFileToByteArray(imageFilesrc).toByteArray()
+                    // ByteArrayOutputStream fileDataStream = readFileToByteArray(imageFilesrc);
+                    // saveByteArrayToFile(fileDataStream.toByteArray(),imageFile);
+//                    while (!compareFiles(imageFilesrc,imageFile)) {
+//                        Thread.sleep(1000);
+//                    }
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "addMetaInfo: " + e.toString());
+        }
+    }
+    public static void saveByteArrayToFile(byte[] buffer, File file) {
+        if (file.exists()) {
+            file.delete();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        FileOutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(file);
+            outputStream.write(buffer);
+            outputStream.flush();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 
