@@ -2,39 +2,27 @@ package ru.miacomsoft.huawei_meta;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
+import static ru.miacomsoft.huawei_meta.JpegMetaInfo.addOrUpdateXmp;
+
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileObserver;
-
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-
-
-import org.apache.commons.io.FileUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,8 +31,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
 
 public class FileObserverService extends Service {
     private static final String TAG = "FileObserverService";
@@ -59,6 +45,10 @@ public class FileObserverService extends Service {
     private File pathProjectDirFile;
     private GpsManager gpsManager;
     private JSONObject config;
+    private File imageFilesrc;
+    private File imageFileDst;
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -264,7 +254,6 @@ public class FileObserverService extends Service {
             }
         }
     }
-
     private void addMetaInfo(File directory ,File pathProjectDirFile ,String fileName){
         try {
             if (!fileName.substring(fileName.lastIndexOf(".")).toLowerCase().equals(".json")) {
@@ -286,8 +275,8 @@ public class FileObserverService extends Service {
                 if (locationJson.has("lat")) {
                     latitude = locationJson.getDouble("lat");
                 }
-                File imageFilesrc = new File(directory.getPath() + "/" + fileName);
-                File imageFile = new File(pathProjectDirFile.getPath() + "/" + fileName);
+                imageFilesrc = new File(directory.getPath() + "/" + fileName);
+                imageFileDst = new File(pathProjectDirFile.getPath() + "/" + fileName);
                 Double orient_azimuth = orientationSensor.getAZIMUTH();
                 Double orient_roll = orientationSensor.getROLL();
                 Double orient_pitch = orientationSensor.getPITCH();
@@ -315,13 +304,25 @@ public class FileObserverService extends Service {
                 scen.put("scenes", scene);
                 Log.d(TAG, scen.toString(4));
                 createTextFile(pathProjectDirFile,name + ".json", scen.toString(4));
-                if (!imageFilesrc.getAbsolutePath().equals(imageFile.getAbsolutePath())) {
-                    copyFile(imageFilesrc,imageFile);
-                    if (config.has("remuveSrcPhoto") &&  config.getBoolean("remuveSrcPhoto")) {
-                        while (imageFilesrc.length() != imageFile.length()) {
-                            Thread.sleep(500);
+
+                JSONObject jsonMetaInfo = new JSONObject();
+                jsonMetaInfo.put("lat",10);
+                jsonMetaInfo.put("lon",20);
+
+                // todo: разработать механизм быстрой записи  json объекта в Jpeg файл
+                // addOrUpdateXmp(imageFilesrc, jsonMetaInfo,()->{ });
+
+                if (!imageFilesrc.getAbsolutePath().equals(imageFileDst.getAbsolutePath())) {
+                    try {
+                        copyFile(imageFilesrc,imageFileDst);
+                        if (config.has("remuveSrcPhoto") &&  config.getBoolean("remuveSrcPhoto")) {
+                            while (imageFilesrc.length() != imageFileDst.length()) {
+                                Thread.sleep(500);
+                            }
+                            imageFilesrc.delete();
                         }
-                        imageFilesrc.delete();
+                    } catch (IOException | InterruptedException | JSONException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }

@@ -87,19 +87,19 @@ public class SetupApp extends AppCompatActivity {
             JSONObject observerProperty = new JSONObject();
             observerProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/CV60");
             observerProperty.put("type", "string");
-            observerProperty.put("text", "Отслеживания");
+            observerProperty.put("text", "Tracking directory");
             defaultJSON.put("observer", observerProperty);
 
             JSONObject isRunServiceProperty = new JSONObject();
             isRunServiceProperty.put("value", false);
             isRunServiceProperty.put("type", "boolean");
-            isRunServiceProperty.put("text", "Удалять исходое фото");
+            isRunServiceProperty.put("text", "Delete original photo");
             defaultJSON.put("remuveSrcPhoto", isRunServiceProperty);
 
             JSONObject projectProperty = new JSONObject();
             projectProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/HUAWEI_META");
             projectProperty.put("type", "string");
-            projectProperty.put("text", "Проекта");
+            projectProperty.put("text", "Project directory");
             defaultJSON.put("projectDir", projectProperty);
 
 //            выпадающий список combobox

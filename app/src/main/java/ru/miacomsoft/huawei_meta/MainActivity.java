@@ -53,11 +53,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-            permissionFile.checkPermissions(() -> {
-                permissionGPS.checkPermissions(() -> {
-                    onStartApp();
-                });
+        permissionFile.checkPermissions(() -> {
+            permissionGPS.checkPermissions(() -> {
+                onStartApp();
             });
+        });
     }
 
     private JSONObject config;
@@ -237,7 +237,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } else if (requestCode == SetupApp.REQUEST_CODE_SETUP_APP && resultCode == RESULT_OK && data != null) {
-            onStartApp();
+            String reloadAppStr = data.getStringExtra("RELOAD_APP");
+            if (reloadAppStr != null) {
+                onStartApp();
+            }
         }
     }
 
