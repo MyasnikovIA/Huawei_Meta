@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
     private FileBrowser fileBrowser;
     private Panorama panorama;
     private String TAG = "MainActivity";
-    private boolean isRunService = false;
     private String selectPhoto = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
             });
     }
 
-
+    private JSONObject config;
     private void onStartApp() {
-        JSONObject config = SetupApp.getConfigJSON(this);
+        config = SetupApp.getConfigJSON(this);
         if (config==null) {
             // если нет файла настройки, тогда открываем окно для конфигурирования приложения
             Intent intent = new Intent(this, SetupApp.class);
@@ -87,18 +86,10 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 PATH_DIR_PROJECT = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
             }
-            if (config.has("isRunService")) {
-                isRunService = config.getBoolean("isRunService");
-            } else {
-                isRunService = false;
-            }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-
-        if (isRunService) {
-            startservice();
-        }
+        startservice();
         File pathProject = new File(PATH_DIR_PROJECT);
         if (!pathProject.exists()) {
             pathProject.mkdirs();
@@ -169,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
             serviceIntent = new Intent(this, FileObserverService.class);
             serviceIntent.putExtra("PATH_DIR", PATH_DIR);
             serviceIntent.putExtra("PATH_DIR_PROJECT", PATH_DIR_PROJECT);
+            serviceIntent.putExtra("CONFIG_PROJECT", config.toString());
             startService(serviceIntent);
             Toast.makeText(this, "Сервис запущен ", Toast.LENGTH_LONG).show();
 

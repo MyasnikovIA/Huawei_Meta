@@ -91,10 +91,10 @@ public class SetupApp extends AppCompatActivity {
             defaultJSON.put("observer", observerProperty);
 
             JSONObject isRunServiceProperty = new JSONObject();
-            isRunServiceProperty.put("value", true);
+            isRunServiceProperty.put("value", false);
             isRunServiceProperty.put("type", "boolean");
-            isRunServiceProperty.put("text", "Запустиь сервис при старте приложения");
-            defaultJSON.put("isRunService", isRunServiceProperty);
+            isRunServiceProperty.put("text", "Удалять исходое фото");
+            defaultJSON.put("remuveSrcPhoto", isRunServiceProperty);
 
             JSONObject projectProperty = new JSONObject();
             projectProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/HUAWEI_META");

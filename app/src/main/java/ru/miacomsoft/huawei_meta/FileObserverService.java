@@ -58,6 +58,7 @@ public class FileObserverService extends Service {
     private File pathDirFile;
     private File pathProjectDirFile;
     private GpsManager gpsManager;
+    private JSONObject config;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -70,6 +71,14 @@ public class FileObserverService extends Service {
         gpsManager.enableGps();
         gpsManager.requestLocationUpdates();
 
+        String configStr = intent.getStringExtra("CONFIG_PROJECT");
+        if (configStr != null) {
+            try {
+                config = new JSONObject(configStr);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
         String pathDir = intent.getStringExtra("PATH_DIR");
         if (pathDir != null) {
             pathDirFile = new File(pathDir);
@@ -277,7 +286,6 @@ public class FileObserverService extends Service {
                 if (locationJson.has("lat")) {
                     latitude = locationJson.getDouble("lat");
                 }
-
                 File imageFilesrc = new File(directory.getPath() + "/" + fileName);
                 File imageFile = new File(pathProjectDirFile.getPath() + "/" + fileName);
                 Double orient_azimuth = orientationSensor.getAZIMUTH();
@@ -307,18 +315,14 @@ public class FileObserverService extends Service {
                 scen.put("scenes", scene);
                 Log.d(TAG, scen.toString(4));
                 createTextFile(pathProjectDirFile,name + ".json", scen.toString(4));
-                //addCommentToImage(imageFile, scen.toString(4));
-                //String comment = readCommentFromImage(imageFile);
-                //Log.d(TAG, "Read comment: " + comment );
-
                 if (!imageFilesrc.getAbsolutePath().equals(imageFile.getAbsolutePath())) {
-                    copyFile(imageFilesrc,imageFile); // вариант копирования 1
-                    // byte[] fileData = readFileToByteArray(imageFilesrc).toByteArray()
-                    // ByteArrayOutputStream fileDataStream = readFileToByteArray(imageFilesrc);
-                    // saveByteArrayToFile(fileDataStream.toByteArray(),imageFile);
-//                    while (!compareFiles(imageFilesrc,imageFile)) {
-//                        Thread.sleep(1000);
-//                    }
+                    copyFile(imageFilesrc,imageFile);
+                    if (config.has("remuveSrcPhoto") &&  config.getBoolean("remuveSrcPhoto")) {
+                        while (imageFilesrc.length() != imageFile.length()) {
+                            Thread.sleep(500);
+                        }
+                        imageFilesrc.delete();
+                    }
                 }
             }
         } catch (Exception e) {
@@ -361,51 +365,6 @@ public class FileObserverService extends Service {
                     throw new RuntimeException(e);
                 }
             }
-        }
-    }
-
-    public String readCommentFromImage(File imageFile) {
-        String extractedText = "";
-        try (FileInputStream fis = new FileInputStream(imageFile)) {
-            // Чтение файла в байтовый массив
-            byte[] fileData = new byte[(int) imageFile.length()];
-            fis.read(fileData);
-            String stopBlock = new String(new byte[]{(byte) 0xFF, (byte) 0xD9});
-            String tmp = new String(fileData);
-            if (tmp.lastIndexOf("COM")!=-1 && tmp.lastIndexOf(stopBlock)!=-1) {
-                tmp = tmp.substring(tmp.lastIndexOf("COM")+3);
-                extractedText = tmp.split(new String(new byte[]{(byte) 0xFF, (byte) 0xD9}))[0];
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "readCommentFromImage: " + e.toString());
-        }
-        return extractedText;
-    }
-
-    /**
-     * Добавление в JPEG файл комментарий JSON формат
-     * todo: дописать механизм чтения
-     * @param imageFile
-     * @param comment
-     */
-    private void addCommentToImage(File imageFile, String comment){
-        try (RandomAccessFile raf = new RandomAccessFile(imageFile, "rw")) {
-            long length = raf.length();
-            if (length < 2) {
-                throw new IOException("Файл слишком мал для JPEG.");
-            }
-            raf.seek(length - 2);
-            byte[] lastTwoBytes = new byte[2];
-            raf.read(lastTwoBytes);
-            if (lastTwoBytes[0] != (byte) 0xFF || lastTwoBytes[1] != (byte) 0xD9) {
-                 return;
-                 //throw new IOException("Файл не является корректным JPEG.");
-            }
-            raf.seek(length - 2);
-            raf.write(("COM" + comment).getBytes());
-            raf.write(new byte[]{(byte) 0xFF, (byte) 0xD9});
-        } catch (Exception e){
-            Log.e(TAG, "addCommentToImage: " + e.toString());
         }
     }
 
