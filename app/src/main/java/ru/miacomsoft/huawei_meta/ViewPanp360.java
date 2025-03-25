@@ -23,7 +23,6 @@ import ru.miacomsoft.huawei_meta.view_photo.Panorama;
 
 public class ViewPanp360 extends AppCompatActivity {
 
-
     private String TAG = "ViewPanp360";
     private JSONObject pointJson;
     private WebView webView;

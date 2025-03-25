@@ -184,7 +184,7 @@ public class FileBrowser {
                                   //  prefixStr += "NoPoint ";
                                 };
                                 prefixStr += ")";
-                                if (prefixStr.length()==2) {
+                                if (prefixStr.length()==3) {
                                     prefixStr = "";
                                 }
                                 fileList.add(file.getName());
