@@ -49,8 +49,9 @@ public class SetupApp extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup_app);
+
         // Перевернуть ориентацию приложения
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+        // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
 
         layoutContainer = findViewById(R.id.layoutContainerSetup);
         btnSave = findViewById(R.id.btnSave);
@@ -95,6 +96,12 @@ public class SetupApp extends AppCompatActivity {
             isRunServiceProperty.put("type", "boolean");
             isRunServiceProperty.put("text", "Delete original photo");
             defaultJSON.put("remuveSrcPhoto", isRunServiceProperty);
+
+            JSONObject isFlipTheScreen = new JSONObject();
+            isFlipTheScreen.put("value", false);
+            isFlipTheScreen.put("type", "boolean");
+            isFlipTheScreen.put("text", "Flip the screen");
+            defaultJSON.put("FlipTheScreen", isFlipTheScreen);
 
             JSONObject projectProperty = new JSONObject();
             projectProperty.put("value", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/HUAWEI_META");

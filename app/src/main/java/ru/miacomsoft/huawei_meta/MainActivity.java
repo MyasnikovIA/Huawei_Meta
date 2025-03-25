@@ -34,13 +34,13 @@ public class MainActivity extends AppCompatActivity {
     private Panorama panorama;
     private String TAG = "MainActivity";
     private String selectPhoto = null;
+    private Thread.UncaughtExceptionHandler defaultHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        // Перевернуть ориентацию приложения
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
         //View rootView = findViewById(android.R.id.content);
         //rootView.setRotation(180);
         runExternalApp = new RunExternalApp(this);
@@ -48,6 +48,17 @@ public class MainActivity extends AppCompatActivity {
         permissionFile = new PermissionFile(this);
         fileBrowser = new FileBrowser(this);
         panorama = new Panorama(this);
+
+        // Для перезапуска после исключения (в классе Application):
+        defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
+            // Логирование ошибки
+            Log.e("AppCrash", "Crash detected", ex);
+            // Перезапуск приложения
+            AppRestartUtil.restartApp(getApplicationContext());
+            // Вызов стандартного обработчика (необязательно)
+            defaultHandler.uncaughtException(thread, ex);
+        });
     }
 
     @Override
@@ -86,6 +97,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 PATH_DIR_PROJECT = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
             }
+            if (config.has("FlipTheScreen") && config.getBoolean("FlipTheScreen")) {
+                // Перевернуть ориентацию приложения
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+            }
+
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -239,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (requestCode == SetupApp.REQUEST_CODE_SETUP_APP && resultCode == RESULT_OK && data != null) {
             String reloadAppStr = data.getStringExtra("RELOAD_APP");
             if (reloadAppStr != null) {
-                onStartApp();
+                AppRestartUtil.restartApp(getApplicationContext());// Перезапуск приложения
             }
         }
     }
