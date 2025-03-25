@@ -10,6 +10,8 @@ MVP
 <br/>
 <img src="https://github.com/MyasnikovIA/Huawei_Meta/blob/main/img/photo_2025-03-11_11-44-52.jpg?raw=true"/>
 <br/>
+<img src="https://github.com/MyasnikovIA/Huawei_Meta/blob/main/img/20250325_112014.jpg?raw=true"/>
+<br/>
 <img src="https://github.com/MyasnikovIA/Huawei_Meta/blob/main/img/20250325_111124.jpg?raw=true"/>
 <br/>
 <img src="https://github.com/MyasnikovIA/Huawei_Meta/blob/main/img/photo_2025-03-11_11-47-59.jpg?raw=true"/>
