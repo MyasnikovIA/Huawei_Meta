@@ -9,10 +9,7 @@ import android.webkit.WebView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import ru.miacomsoft.huawei_meta.EditPointActivity;
-import ru.miacomsoft.huawei_meta.SelectPointActivity;
 import ru.miacomsoft.huawei_meta.ViewPanp360;
-import ru.miacomsoft.huawei_meta.view_photo.Panorama;
 
 public class OsmMapJs {
 

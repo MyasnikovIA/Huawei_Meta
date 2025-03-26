@@ -80,11 +80,6 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, SetupApp.REQUEST_CODE_SETUP_APP);
             return;
         }
-        try {
-            Log.d("config",config.toString(4));
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
         //PATH_DIR= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
         try {
             if (config.has("observer")) {
@@ -119,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         if (panorama.getFilePano() !=null) {
             selectPhoto = panorama.getFilePano().getName();
         }
+
         final Button buttonStartHuawei = (Button)findViewById(R.id.buttonSelectPoint);
         buttonStartHuawei.setOnClickListener(v -> {
             runExternalApp.run("com.huawei.cvIntl60");

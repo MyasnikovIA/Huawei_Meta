@@ -47,7 +47,7 @@
         <activity
             android:name=".MapView"
             android:exported="false" />
-        <activity android:name=".SelectPointActivity" />
+        <activity android:name=".SelectHotspotActivity" />
         <activity android:name=".EditPointActivity" />
         <activity
             android:name=".MainActivity"

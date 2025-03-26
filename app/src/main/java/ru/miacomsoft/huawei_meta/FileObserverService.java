@@ -268,13 +268,14 @@ public class FileObserverService extends Service {
 //                    }
 //                }
 
-                JSONObject locationJson = gpsManager.showLocation();
-                if (locationJson.has("lon")) {
-                    longitude = locationJson.getDouble("lon");
-                }
-                if (locationJson.has("lat")) {
-                    latitude = locationJson.getDouble("lat");
-                }
+               JSONObject locationJson = gpsManager.showLocation();
+               if (locationJson.has("lon")) {
+                   longitude = locationJson.getDouble("lon");
+               }
+               if (locationJson.has("lat")) {
+                   latitude = locationJson.getDouble("lat");
+               }
+
                 imageFilesrc = new File(directory.getPath() + "/" + fileName);
                 imageFileDst = new File(pathProjectDirFile.getPath() + "/" + fileName);
                 Double orient_azimuth = orientationSensor.getAZIMUTH();

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import ru.miacomsoft.huawei_meta.EditPointActivity;
-import ru.miacomsoft.huawei_meta.SelectPointActivity;
+import ru.miacomsoft.huawei_meta.SelectHotspotActivity;
 import ru.miacomsoft.huawei_meta.view_photo.Panorama;
 
 
@@ -93,7 +93,7 @@ public class PanoramaJs {
     @JavascriptInterface
     public void selectNewPoint(String imgInfoPath, String imgInfojsonStr, String positionNewPoint,String path_dir,String actionType) {
         if (actionType.equals("add")) {
-            Intent intent = new Intent(parentActivity.getApplicationContext(), SelectPointActivity.class);
+            Intent intent = new Intent(parentActivity.getApplicationContext(), SelectHotspotActivity.class);
             intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
             intent.putExtra("imgInfojsonStr", imgInfojsonStr);    // Передаем число
             intent.putExtra("positionNewPoint", positionNewPoint);    // Передаем число
