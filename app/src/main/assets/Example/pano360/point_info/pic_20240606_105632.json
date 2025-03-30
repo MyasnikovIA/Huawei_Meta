@@ -1,0 +1,18 @@
+{
+    "default": {"firstScene": "scene1"},
+    "hotSpotDebug": false,
+    "scenes": {"scene1": {
+        "hotSpots": [
+        ],
+        "panorama": "assets/Example/pano360/point_info/pic_20240606_105632.jpg",
+        "autoLoad": true,
+        "crossOrigin": "use-credentials",
+        "lon": 0,
+        "pitch": -8.694715202853303,
+        "title": "pic_20240606_105632",
+        "yaw": -32.42298434272254,
+        "lat": 0
+    }},
+    "hotPointDebug": true,
+    "sceneFadeDuration": 1000
+}

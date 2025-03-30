@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="10">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="0dp"
+        android:layout_weight="0.3">
+    </LinearLayout>
+
+    <!-- 1) 4 кнопки сверху -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonSelectPoint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cam"/>
+
+        <Button
+            android:id="@+id/buttonSelectLastGps"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Save"/>
+
+        <Button
+            android:id="@+id/buttonCancelSelectMapPoint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Map"/>
+
+        <Button
+            android:id="@+id/buttonDeletePanorama"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Del"/>
+    </LinearLayout>
+
+    <!-- 2) WebView (50% высоты) -->
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6"/>
+
+    <!-- 3) Поле поиска -->
+    <EditText
+        android:id="@+id/editTextSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Поиск..."
+        android:inputType="text"/>
+
+    <!-- 4) ListView (30% высоты) -->
+    <ListView
+        android:id="@+id/FileListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2.5"/>
+
+    <!-- 5) 3 кнопки снизу -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonRenamePanprama"
+            android:text="ReName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/buttonMapsPoint"
+            android:text="MapsPoint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/buttonSetupApp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Setup"/>
+    </LinearLayout>
+
+</LinearLayout>

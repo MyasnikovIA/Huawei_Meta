@@ -1,0 +1,63 @@
+
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="file:///android_asset/lib/Pannellum2_5_6/pannellum.css"/>
+    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/pannellum.js?ind=1"></script>
+    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/libpannellum.js?ind=1"></script>
+</head>
+<body>
+<div id="panorama"></div>
+<script>
+    var selectPoint={};
+    var path_dir;
+    var from_pitch="";
+    var from_yaw="";
+
+    onDblClickScene = function(coords) {
+       selectPoint = coords;
+       selectPoint['path_dir'] = path_dir;
+       selectPoint['from_pitch'] = from_pitch;
+       selectPoint['from_yaw'] = from_yaw;
+       selectPoint['imgInfoPath'] = imgInfoPath;
+       selectPoint['imgInnfoJson'] = imgInnfoJson;
+       selectPoint['path_dir'] = path_dir;
+       panorama.onDblClick(JSON.stringify(selectPoint));
+
+       console.log('selectPoint.yaw='+selectPoint.yaw+'selectPoint.pitch='+selectPoint.pitch);
+       // panorama.selectNewPoint(imgInfoPath, JSON.stringify(imgInnfoJson), JSON.stringify(selectPoint), path_dir,'add');
+    };
+
+    onClickHotSpot = function(hs) {
+        hs['panorama_url_from'] = imgInfoPath;
+        hs['imgInfoPath'] = imgInfoPath;
+        hs['path_dir'] = path_dir;
+        hs['imgInfoPath'] = imgInfoPath;
+        hs['path_dir'] = path_dir;
+        //panorama.onClickHotSpot(imgInfoPath, JSON.stringify(hs), null, path_dir,'edit');
+        panorama.onClickHotSpot(JSON.stringify(hs));
+    }
+
+    let sceneMain={};
+    const queryString = document.location.search;
+    const params = new URLSearchParams(queryString);
+    let canvas = document.getElementById('panorama');
+    canvas.style.width = (window.innerWidth) + 'px';
+    canvas.style.height = (window.innerHeight) + 'px';
+    imgInfoPath = params.get('img');
+    from_pitch = params.get('from_pitch');
+    from_yaw = params.get('from_yaw');
+    path_dir = params.get('path_dir');
+    console.log("params.get('json_info') "+params.get('json_info'))
+    imgInnfoJson = JSON.parse(params.get('json_info'));
+    imgInnfoJson.onDblClick = onDblClickScene;
+    imgInnfoJson.onClickHotSpot = onClickHotSpot;
+    sceneMain = pannellum.viewer('panorama', imgInnfoJson);
+    sceneMain.setPitch(imgInnfoJson.scenes.scene1.pitch);
+    sceneMain.setYaw(imgInnfoJson.scenes.scene1.yaw);
+</script>
+
+</body>
+</html>

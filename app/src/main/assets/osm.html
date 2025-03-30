@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="file:///android_asset/lib/Leaflet/leaflet.css" />
+    <script src="file:///android_asset/lib/Leaflet/leaflet.js"></script>
+    <style>
+        #map { width: 100%; height: 1000px;}
+    </style>
+</head>
+<body>
+    <input type="text" id="search" placeholder="Поиск объекта" style="width: 98%;" onkeypress="checkEnter(event)">
+    <div id="map"></div>
+<script>
+    function checkEnter(event) {
+        if (event.key === 'Enter') {
+            searchLocation();
+            event.preventDefault();
+        }
+    }
+
+    const queryString = document.location.search;
+    const params = new URLSearchParams(queryString);
+    lat = params.get('lat') || 53.35294643320362;
+    lon = params.get('lon') || 83.67589294910432;
+    zoom = params.get('zoom') || 13;
+    const map = L.map('map').setView([lat, lon], zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+
+    let marker = null;
+    marker = L.marker([lat, lon]).addTo(map).bindPopup(`Lat: ${lat}; Lon: ${lon}`).openPopup();
+    // Функция, которая будет вызываться при нажатии на маркер
+    function onMarkerClick(markerData) {
+        console.log(JSON.stringify(markerData));
+        OsmMapJs.opanPanorama360(JSON.stringify(markerData));
+    }
+
+    map.on('click', function(e) {
+        lat = e.latlng.lat;
+        lon = e.latlng.lng;
+        // Если маркер еще не создан, создаем его
+        if (!marker) {
+            marker = L.marker([lat, lon]).addTo(map)
+                .bindPopup(`Lat: ${lat} <br/>Lon: ${lon}`)
+                .openPopup();
+        } else {
+            // Если маркер уже существует, перемещаем его
+            marker.setLatLng([lat, lon])
+                .bindPopup(`Lat: ${lat} <br/>Lon: ${lon}`)
+                .openPopup();
+        }
+    });
+
+    // Функция для поиска местоположения
+    function searchLocation() {
+        const query = document.getElementById('search').value;
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    lat = parseFloat(data[0].lat);
+                    lon = parseFloat(data[0].lon);
+                    map.setView([lat, lon], 14);
+                    if (marker) {
+                        // Если маркер уже существует, перемещаем его
+                        marker.setLatLng([lat, lon]).bindPopup(`Location: ${data[0].display_name}`).openPopup();
+                    } else {
+                        // Если маркер не существует, создаем его
+                        marker = L.marker([lat, lon]).addTo(map).bindPopup(`Location: ${data[0].display_name}`).openPopup();
+                    }
+                } else {
+                    alert('Location not found');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+</body>
+</html>

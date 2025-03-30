@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="10">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="0dp"
+        android:layout_weight="0.3">
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="0dp"
+        android:layout_weight="0.7">
+        <Button
+            android:id="@+id/buttonGetGps"
+            android:layout_width="65dp"
+            android:layout_height="wrap_content"
+            android:text="GPS"
+            android:textSize="8sp" />
+
+        <Button
+            android:id="@+id/buttonSelectPoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select GPS"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/buttonSelectLastGps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Last GPS"
+            android:textSize="12sp"
+            android:textStyle="normal|bold|italic" />
+
+        <Button
+            android:id="@+id/buttonCancelSelectMapPoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- 2) WebView (50% высоты) -->
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="9"/>
+
+</LinearLayout>

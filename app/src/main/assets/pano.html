@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="file:///android_asset/lib/Pannellum2_5_6/pannellum.css"/>
+    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/pannellum.js"></script>
+    <script type="text/javascript" src="file:///android_asset/lib/Pannellum2_5_6/libpannellum.js"></script>
+    <script src="file:///android_asset/lib/OpenStreetMap/OpenLayers-1.0.0/OpenLayers.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/lib/OpenStreetMap/OpenLayers-1.0.0/style.css">
+    <script src="file:///android_asset/lib/OpenStreetMap/OpenLayers-1.0.0/osm.js"></script>
+    <link rel="stylesheet" href="https://openlayers.org/en/latest/css/ol.css" />
+    <script src="file:///android_asset/lib/System/main.js" type="text/javascript"></script>
+</head>
+<body>
+    <div id="canvas"></div>
+</body>
+<script>
+        let canvas = document.getElementById('canvas');
+        canvas.style.width = (window.innerWidth)-10 + 'px';
+        canvas.style.height = (window.innerHeight)-10 + 'px';
+        let jsonObj = {
+            "hotPointDebug": true,
+            "sceneFadeDuration": 1000,
+            "default": {
+                "firstScene": "scene1"
+            },
+            "scenes": {
+                "scenes": {
+                    "scene1": {
+                        "title": 'file:///storage/emulated/0/DCIM/CV60/PIC_20250307_221549.jpg',
+                        "panorama":  'file:///storage/emulated/0/DCIM/CV60/PIC_20250307_221549.jpg',
+                        "crossOrigin": "use-credentials",
+                        "autoLoad": true,
+                        // Направление взгляда yaw  pitch
+                        "yaw": -6.7703862452244294,  // Ось X  от -180 до +180
+                        "pitch": -24.413348927017115,  // Ось Y  от -90 до +90
+                        "hotSpots": []
+                    }
+                }
+            }
+        };
+        sceneMain = pannellum.viewer('canvas', jsonObj);
+</script>
+
+</html>
