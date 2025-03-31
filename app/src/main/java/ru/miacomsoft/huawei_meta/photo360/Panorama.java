@@ -187,89 +187,8 @@ public class Panorama {
                 }
             }
         });
-        // Добавляем интерфейс для связи Java-JS
-        myWebView.addJavascriptInterface(new WebAppInterface(myWebView), "AndroidBridge");
-
-        // Настройка обработчика касаний
-        myWebView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    long currentTime = System.currentTimeMillis();
-
-                    // Проверяем двойной клик (интервал менее 300 мс)
-                    if (currentTime - lastTouchTime < 500 && Math.abs(event.getX() - lastTouchX) < 10 && Math.abs(event.getY() - lastTouchY) < 10) {
-                        // Генерируем MouseEvent dblclick в WebView
-                        triggerDoubleClickInWebView(event.getX(), event.getY(),myWebView.getWidth(), myWebView.getHeight());
-                        return true;
-                    }
-
-                    lastTouchTime = currentTime;
-                    lastTouchX = event.getX();
-                    lastTouchY = event.getY();
-                }
-                return false;
-            }
-        });
         myWebView.loadUrl(urlPage);
     }
-    // Класс для взаимодействия между Java и JavaScript
-    public class WebAppInterface {
-        private WebView localWebView;
-        public WebAppInterface(WebView localWebView) {
-            this.localWebView = localWebView;
-        }
-        @JavascriptInterface
-        public void simulateDoubleClick(float x, float y) {
-            appCompatActivity.runOnUiThread(() -> triggerDoubleClickInWebView(x, y,  localWebView.getWidth(), localWebView.getHeight()));
-        }
-    }
-
-    // Метод для генерации двойного клика в WebView
-    private void triggerDoubleClickInWebView(float x, float y, int width, int height) {
-        String jsCode = String.format(Locale.US,
-                "(function() {" +
-                        // "   var target = document.elementFromPoint(%f, %f);" +
-                        "   var target = document.getElementById('panorama');" +
-                        "   if (target) {" +
-                        "       var rect = target.getBoundingClientRect();" +
-                        "       var clientX = %f - rect.left;" +
-                        "       var clientY = %f - rect.top;" +
-                        "       " +
-                        "       var event = new MouseEvent('dblclick', {" +
-                        "           bubbles: true," +
-                        "           cancelable: true," +
-                        "           view: window," +
-                        "           clientX: clientX," +
-                        "           clientY: clientY," +
-                       // "           screenX: %f," +
-                       // "           screenY: %f," +
-                        "           webViewWidth: %d," +
-                        "           webViewHeight: %d" +
-                        "       });" +
-                        "       " +
-                        "       var coords = sceneMain.mouseEventToCoords2(event);" +
-                        "       selectPoint = {};\n" +
-                        "       selectPoint['yaw'] = coords[1];\n" +
-                        "       selectPoint['pitch'] = coords[0];\n" +
-                        "       selectPoint['path_dir'] = path_dir;\n" +
-                        "       selectPoint['from_pitch'] = from_pitch;\n" +
-                        "       selectPoint['from_yaw'] = from_yaw;\n" +
-                        "       selectPoint['imgInfoPath'] = imgInfoPath;\n" +
-                        "       selectPoint['imgInnfoJson'] = imgInnfoJson;\n" +
-                        "       selectPoint['path_dir'] = path_dir;\n" +
-                        "       panorama.onDblClick(JSON.stringify(selectPoint));\n" +
-                        "   }" +
-                        "})()", x, y, width,height);
-        myWebView.loadUrl("javascript:" + jsCode);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//            myWebView.evaluateJavascript(jsCode, null);
-//        } else {
-//            myWebView.loadUrl("javascript:" + jsCode);
-//        }
-    }
-
-
 
     public void setVar(String key, String value) {
         if (myWebView != null) {
@@ -279,7 +198,6 @@ public class Panorama {
             myWebView.loadUrl(sb.toString());
         }
     }
-
     public void setVar(String key, JSONObject value) {
         if (myWebView != null) {
             StringBuffer sb = new StringBuffer();
@@ -327,7 +245,7 @@ public class Panorama {
             StringBuffer sb = new StringBuffer();
             sb.append("javascript: ");
             sb.append("mgInnfoJson = JSON.parse(panorama.readInfoJson('" + hotSpot.getString("panorama_url_from") + "'));");
-            sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
+            // sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
             sb.append("imgInnfoJson.onClickHotSpot = onClickHotSpot;");
             sb.append("if (sceneMain?.destroy) { sceneMain.destroy(); }");
             sb.append("sceneMain = pannellum.viewer('panorama', imgInnfoJson);");
@@ -352,7 +270,7 @@ public class Panorama {
             StringBuffer sb = new StringBuffer();
             sb.append("javascript: ");
             sb.append("imgInnfoJson = ").append(imageInfoJson.toString()).append(";");
-            sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
+            // sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
             sb.append("imgInnfoJson.onClickHotSpot = onClickHotSpot;");
             sb.append("if (sceneMain?.destroy) { sceneMain.destroy(); }");
             sb.append("sceneMain = pannellum.viewer('panorama', imgInnfoJson);");

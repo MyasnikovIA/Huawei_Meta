@@ -16,18 +16,46 @@
     var from_pitch="";
     var from_yaw="";
 
-    onDblClickScene = function(coords) {
-       selectPoint = coords;
-       selectPoint['path_dir'] = path_dir;
-       selectPoint['from_pitch'] = from_pitch;
-       selectPoint['from_yaw'] = from_yaw;
-       selectPoint['imgInfoPath'] = imgInfoPath;
-       selectPoint['imgInnfoJson'] = imgInnfoJson;
-       selectPoint['path_dir'] = path_dir;
-       panorama.onDblClick(JSON.stringify(selectPoint));
-       console.log('selectPoint.yaw='+selectPoint.yaw+'selectPoint.pitch='+selectPoint.pitch);
-       // panorama.selectNewPoint(imgInfoPath, JSON.stringify(imgInnfoJson), JSON.stringify(selectPoint), path_dir,'add');
-    };
+
+    window.touchMouseEventDom = null;
+    window.runAddHotSpot = false;
+    document.addEventListener('touchstart', function(evt) {
+        const mouseEvent = new MouseEvent('dblclick', {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+            screenX: evt.screenX,
+            screenY: evt.screenY,
+            clientX: evt.clientX,
+            clientY: evt.clientY,
+            button: 0 // Левая кнопка мыши
+        });
+        window.touchMouseEventDom = mouseEvent;
+        window.runAddHotSpot = false;
+    });
+
+    document.getElementById('panorama').addEventListener('click', (function() {
+        // эмуляция дубльклика
+        let lastClickTime = 0;
+        return function(event) {
+            const currentTime = Date.now();
+            if (currentTime - lastClickTime < 1000) {
+                const coords = sceneMain.mouseEventToCoords2(event);
+                const selectPoint = {
+                    'pitch': coords[0],
+                    'yaw': coords[1],
+                    'path_dir': path_dir,
+                    'from_pitch': from_pitch,
+                    'from_yaw': from_yaw,
+                    'imgInfoPath': imgInfoPath,
+                    'imgInnfoJson': imgInnfoJson
+                };
+                panorama.onDblClick(JSON.stringify(selectPoint));
+            }
+
+            lastClickTime = currentTime;
+        };
+    })());
 
     onClickHotSpot = function(hs) {
         hs['panorama_url_from'] = imgInfoPath;
@@ -35,7 +63,6 @@
         hs['path_dir'] = path_dir;
         hs['imgInfoPath'] = imgInfoPath;
         hs['path_dir'] = path_dir;
-        //panorama.onClickHotSpot(imgInfoPath, JSON.stringify(hs), null, path_dir,'edit');
         panorama.onClickHotSpot(JSON.stringify(hs));
     }
 
@@ -51,7 +78,6 @@
     path_dir = params.get('path_dir');
     console.log("params.get('json_info') "+params.get('json_info'))
     imgInnfoJson = JSON.parse(params.get('json_info'));
-    imgInnfoJson.onDblClick = onDblClickScene;
     imgInnfoJson.onClickHotSpot = onClickHotSpot;
     sceneMain = pannellum.viewer('panorama', imgInnfoJson);
     sceneMain.setPitch(imgInnfoJson.scenes.scene1.pitch);

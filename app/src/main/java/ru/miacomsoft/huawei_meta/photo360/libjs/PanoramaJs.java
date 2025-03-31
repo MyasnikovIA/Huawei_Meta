@@ -100,30 +100,6 @@ public class PanoramaJs {
             Log.e(TAG, "createTextFile: " + e.toString());
         }
     }
-/*
-    private int selectNewPointIndEdit = 0;
-    @JavascriptInterface
-    public void selectNewPoint(String imgInfoPath, String imgInfojsonStr, String positionNewPoint,String path_dir,String actionType) {
-        if (actionType.equals("add")) {
-            Intent intent = new Intent(parentActivity.getApplicationContext(), AddHotSpotActivity.class);
-            intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
-            intent.putExtra("imgInfojsonStr", imgInfojsonStr);    // Передаем число
-            intent.putExtra("positionNewPoint", positionNewPoint);    // Передаем число
-            intent.putExtra("path_dir", path_dir);    // Передаем число
-            parentActivity.startActivityForResult(intent, Panorama.REQUEST_CODE);
-        } else if (actionType.equals("edit")) {
-            selectNewPointIndEdit += 1;
-            if (selectNewPointIndEdit == 2) {
-                selectNewPointIndEdit = 0;
-                return;
-            }
-            Intent intent = new Intent(parentActivity.getApplicationContext(), EditHotSpotMenuActivity.class);
-            intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
-            intent.putExtra("hsJsonStr", imgInfojsonStr);    // Передаем число
-            parentActivity.startActivityForResult(intent, Panorama.REQUEST_CODE_EDIT);
-        }
-    }
- */
     @JavascriptInterface
     public void onDblClick(String jsonStr) {
         JSONObject infojson = null;
