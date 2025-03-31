@@ -271,7 +271,7 @@ public class Panorama {
             sb.append("javascript: ");
             sb.append("imgInnfoJson = ").append(imageInfoJson.toString()).append(";");
             // sb.append("imgInnfoJson.onDblClick = onDblClickScene;");
-            sb.append("imgInnfoJson.onClickHotSpot = onClickHotSpot;");
+            sb.append("imgInnfoJson['onClickHotSpot'] = onClickHotSpot;");
             sb.append("if (sceneMain?.destroy) { sceneMain.destroy(); }");
             sb.append("sceneMain = pannellum.viewer('panorama', imgInnfoJson);");
             sb.append("sceneMain.setPitch(").append(hotSpot.getString("point_pitch")).append(");");

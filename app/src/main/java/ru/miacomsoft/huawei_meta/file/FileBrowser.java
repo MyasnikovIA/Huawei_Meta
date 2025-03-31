@@ -250,7 +250,7 @@ public class FileBrowser {
                     }
                 }
                 // Сортировка файлов по имени
-                Collections.sort(fileList);
+                //  Collections.sort(fileList);
             }
             sortFileListByDate();
         } else {

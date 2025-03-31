@@ -44,8 +44,8 @@ public class MapViewPointsActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_map_view_points);
         // Перевернуть ориентацию приложения
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+        // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     }
 
     @SuppressLint("MissingPermission")
@@ -83,23 +83,23 @@ public class MapViewPointsActivity extends AppCompatActivity {
         });
 
 
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                latGps = location.getLatitude();
-                lonGps = location.getLongitude();
-            }
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
+     //  locationListener = new LocationListener() {
+     //      @Override
+     //      public void onLocationChanged(Location location) {
+     //          latGps = location.getLatitude();
+     //          lonGps = location.getLongitude();
+     //      }
+     //      @Override
+     //      public void onStatusChanged(String provider, int status, Bundle extras) {}
 
-            @Override
-            public void onProviderEnabled(String provider) {}
+     //      @Override
+     //      public void onProviderEnabled(String provider) {}
 
-            @Override
-            public void onProviderDisabled(String provider) {}
-        };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+     //      @Override
+     //      public void onProviderDisabled(String provider) {}
+     //  };
+     //  locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+     //  locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 
 
         if (osmMap==null) {

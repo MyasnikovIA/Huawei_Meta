@@ -58,6 +58,9 @@ public class ViewPanp360Activity extends AppCompatActivity {
             File file = new File(pointJson.getString("dir_name"), pointJson.getString("name"));
             File fileJson = new File(pointJson.getString("dir_name"), pointJson.getString("file_name"));
             String imageInfoJsonStr = readTextFile(fileJson.getParentFile(), fileJson.getName());
+            panorama.setOnClickHotSpot((JSONObject jsonObj)->{
+                panorama.gotoHotSpot(jsonObj);
+            });
             panorama.getPhoto(file,new JSONObject(imageInfoJsonStr));
         } catch (JSONException e) {
             throw new RuntimeException(e);
