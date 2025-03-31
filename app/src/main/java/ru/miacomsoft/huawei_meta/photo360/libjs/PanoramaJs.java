@@ -126,15 +126,6 @@ public class PanoramaJs {
             if (onClickHotSpotFun !=null) {
                 onClickHotSpotFun.call(infojson);
             }
-//            String imgInfoPath = infojson.getString("imgInfoPath");
-//            String path_dir = infojson.getString("path_dir");
-//            infojson.remove("imgInfoPath");
-//            infojson.remove("path_dir");
-//            System.out.println(imgInfojsonStr);
-//            Intent intent = new Intent(parentActivity.getApplicationContext(), EditPointActivity.class);
-//            intent.putExtra("imgInfoPath", imgInfoPath); // Передаем строку
-//            intent.putExtra("hsJsonStr", imgInfojsonStr.toString());    // Передаем число
-//            parentActivity.startActivityForResult(intent, Panorama.REQUEST_CODE_EDIT);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

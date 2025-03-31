@@ -94,6 +94,12 @@ public class FileBrowser {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                boolean currentState = listView.isItemChecked(position);
+                if (!currentState) {
+                    listView.setItemChecked(position, currentState);
+                } else {
+                    listView.setItemChecked(position, !currentState);
+                }
                 if (onClickEvent!=null) {
                     onClickEvent.call(fileListAbs.get(fileList.get(position)));
                 } else {
@@ -102,12 +108,11 @@ public class FileBrowser {
             }
         });
 
-        // Добавление обработчика долгого клика для удаления файлов
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                // todo: дописать механизм удаление выбранного файла
-                // deleteSelectedFiles();
+                boolean currentState = listView.isItemChecked(position);
+                listView.setItemChecked(position, !currentState);
                 return true;
             }
         });

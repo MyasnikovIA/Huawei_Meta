@@ -92,15 +92,14 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 PATH_DIR_PROJECT = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
             }
-
-       //    if (config.has("FlipTheScreen") && config.getBoolean("FlipTheScreen")) {
-       //        // Перевернуть ориентацию приложения
-       //        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
-       //        //View rootView = findViewById(android.R.id.content);
-       //        //rootView.setRotation(180);
-       //    } else {
-       //        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-       //    }
+            if (config.has("FlipTheScreen") && config.getBoolean("FlipTheScreen")) {
+                // Перевернуть ориентацию приложения
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+                //View rootView = findViewById(android.R.id.content);
+                //rootView.setRotation(180);
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+            }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

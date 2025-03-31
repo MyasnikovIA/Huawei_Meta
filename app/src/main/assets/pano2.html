@@ -15,25 +15,6 @@
     var path_dir;
     var from_pitch="";
     var from_yaw="";
-
-
-    window.touchMouseEventDom = null;
-    window.runAddHotSpot = false;
-    document.addEventListener('touchstart', function(evt) {
-        const mouseEvent = new MouseEvent('dblclick', {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-            screenX: evt.screenX,
-            screenY: evt.screenY,
-            clientX: evt.clientX,
-            clientY: evt.clientY,
-            button: 0 // Левая кнопка мыши
-        });
-        window.touchMouseEventDom = mouseEvent;
-        window.runAddHotSpot = false;
-    });
-
     document.getElementById('panorama').addEventListener('click', (function() {
         // эмуляция дубльклика
         let lastClickTime = 0;
