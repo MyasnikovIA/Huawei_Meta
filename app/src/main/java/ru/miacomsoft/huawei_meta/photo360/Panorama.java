@@ -2,11 +2,16 @@ package ru.miacomsoft.huawei_meta.photo360;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import ru.miacomsoft.huawei_meta.R;
@@ -166,7 +172,9 @@ public class Panorama {
     public void setOnDblClick(PanoramaJs.CallbackJSONObjectReturn onDblClickFun){
         panoramaJs.setOnDblClick(onDblClickFun);
     }
-
+    private long lastTouchTime = 0;
+    private float lastTouchX;
+    private float lastTouchY;
     private void loadPage(String urlPage, OsmMap.CallbackEmptyReturn callbackEmptyReturn) {
         myWebView.setWebChromeClient(new WebChromeClient(){
             @Override
@@ -179,8 +187,89 @@ public class Panorama {
                 }
             }
         });
+        // Добавляем интерфейс для связи Java-JS
+        myWebView.addJavascriptInterface(new WebAppInterface(myWebView), "AndroidBridge");
+
+        // Настройка обработчика касаний
+        myWebView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    long currentTime = System.currentTimeMillis();
+
+                    // Проверяем двойной клик (интервал менее 300 мс)
+                    if (currentTime - lastTouchTime < 500 && Math.abs(event.getX() - lastTouchX) < 10 && Math.abs(event.getY() - lastTouchY) < 10) {
+                        // Генерируем MouseEvent dblclick в WebView
+                        triggerDoubleClickInWebView(event.getX(), event.getY(),myWebView.getWidth(), myWebView.getHeight());
+                        return true;
+                    }
+
+                    lastTouchTime = currentTime;
+                    lastTouchX = event.getX();
+                    lastTouchY = event.getY();
+                }
+                return false;
+            }
+        });
         myWebView.loadUrl(urlPage);
     }
+    // Класс для взаимодействия между Java и JavaScript
+    public class WebAppInterface {
+        private WebView localWebView;
+        public WebAppInterface(WebView localWebView) {
+            this.localWebView = localWebView;
+        }
+        @JavascriptInterface
+        public void simulateDoubleClick(float x, float y) {
+            appCompatActivity.runOnUiThread(() -> triggerDoubleClickInWebView(x, y,  localWebView.getWidth(), localWebView.getHeight()));
+        }
+    }
+
+    // Метод для генерации двойного клика в WebView
+    private void triggerDoubleClickInWebView(float x, float y, int width, int height) {
+        String jsCode = String.format(Locale.US,
+                "(function() {" +
+                        // "   var target = document.elementFromPoint(%f, %f);" +
+                        "   var target = document.getElementById('panorama');" +
+                        "   if (target) {" +
+                        "       var rect = target.getBoundingClientRect();" +
+                        "       var clientX = %f - rect.left;" +
+                        "       var clientY = %f - rect.top;" +
+                        "       " +
+                        "       var event = new MouseEvent('dblclick', {" +
+                        "           bubbles: true," +
+                        "           cancelable: true," +
+                        "           view: window," +
+                        "           clientX: clientX," +
+                        "           clientY: clientY," +
+                       // "           screenX: %f," +
+                       // "           screenY: %f," +
+                        "           webViewWidth: %d," +
+                        "           webViewHeight: %d" +
+                        "       });" +
+                        "       " +
+                        "       var coords = sceneMain.mouseEventToCoords2(event);" +
+                        "       selectPoint = {};\n" +
+                        "       selectPoint['yaw'] = coords[1];\n" +
+                        "       selectPoint['pitch'] = coords[0];\n" +
+                        "       selectPoint['path_dir'] = path_dir;\n" +
+                        "       selectPoint['from_pitch'] = from_pitch;\n" +
+                        "       selectPoint['from_yaw'] = from_yaw;\n" +
+                        "       selectPoint['imgInfoPath'] = imgInfoPath;\n" +
+                        "       selectPoint['imgInnfoJson'] = imgInnfoJson;\n" +
+                        "       selectPoint['path_dir'] = path_dir;\n" +
+                        "       panorama.onDblClick(JSON.stringify(selectPoint));\n" +
+                        "   }" +
+                        "})()", x, y, width,height);
+        myWebView.loadUrl("javascript:" + jsCode);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            myWebView.evaluateJavascript(jsCode, null);
+//        } else {
+//            myWebView.loadUrl("javascript:" + jsCode);
+//        }
+    }
+
+
 
     public void setVar(String key, String value) {
         if (myWebView != null) {

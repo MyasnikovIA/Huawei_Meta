@@ -48,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         runExternalApp = new RunExternalApp(this);
         permissionGPS = new PermissionGPS(this);
         permissionFile = new PermissionFile(this);
@@ -89,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
                 PATH_DIR_PROJECT = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/CV60/";
             }
 
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
        //    if (config.has("FlipTheScreen") && config.getBoolean("FlipTheScreen")) {
        //        // Перевернуть ориентацию приложения
        //        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
@@ -156,7 +159,13 @@ public class MainActivity extends AppCompatActivity {
 
         final Button buttonStartHuawei = (Button)findViewById(R.id.buttonSelectPoint);
         buttonStartHuawei.setOnClickListener(v -> {
-            runExternalApp.run("com.huawei.cvIntl60");
+            // runExternalApp.run("com.huawei.cvIntl60");
+            try {
+                runExternalApp.run(SetupApp.CONFIG.getString("PacketNameCamera"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            ;
         });
         final Button buttonSaveImageInfo = (Button)findViewById(R.id.buttonSelectLastGps);
         buttonSaveImageInfo.setOnClickListener(v -> {

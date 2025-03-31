@@ -120,6 +120,13 @@ public class SetupApp extends AppCompatActivity {
             projectMapTmpDir.put("text", "Map image temp directory");
             defaultJSON.put("MapTmpDir", projectMapTmpDir);
 
+            JSONObject packetNameCam = new JSONObject();
+            packetNameCam.put("value", "com.huawei.cvIntl60");
+            packetNameCam.put("type", "string");
+            packetNameCam.put("text", "Packet name camera");
+            defaultJSON.put("PacketNameCamera", packetNameCam);
+
+
 //            выпадающий список combobox
 //            JSONObject comboBoxJSON_1 = new JSONObject();
 //            comboBoxJSON_1.put("name", "Store1");

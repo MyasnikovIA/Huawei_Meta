@@ -3155,6 +3155,10 @@ this.resize = function() {
         onDocumentResize();
 };
 
+this.mouseEventToCoords2 = function(event) {
+   return mouseEventToCoords(event);
+};
+
 /**
  * Check if a panorama is loaded.
  * @memberof Viewer
